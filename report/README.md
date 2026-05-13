@@ -51,7 +51,7 @@ report/
 
 ## Template
 
-Single-column `article` class, 11pt, A4 paper, 1-inch margins, one-and-a-half line spacing, Times font. Citation style remains IEEE (`\bibliographystyle{IEEEtran}`).
+Single-column `article` class, 11pt, A4 paper, 1-inch margins, one-and-a-half line spacing, default Computer Modern font. Citation style remains IEEE (`\bibliographystyle{IEEEtran}`).
 
 This was chosen over IEEE two-column conference format for readability — the report has substantial methodology, pseudocode, equations, and analysis that read better in a single column.
 

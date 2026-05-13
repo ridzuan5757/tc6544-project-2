@@ -83,3 +83,24 @@ All 27 tickets are tracked as GitHub issues in this repository.
 - Experiment results (CSVs in `results/`)
 - Figures (convergence curves, boxplots, tour visualizations)
 - Research report (PDF)
+
+## Development setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+python -c "import ga, repair; print('ok')"
+```
+
+### Project layout
+
+```
+src/
+  ga/         GA core: encoding, selection, crossover, mutation, main loop
+  repair/     Constraint handling: repair, penalty, feasibility-preserving
+experiments/  Experiment runners and configs
+notebooks/    Exploratory analysis and figure generation
+data/         TSPLIB benchmark instances
+results/      Experiment outputs (CSV, figures)
+```

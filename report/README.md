@@ -51,5 +51,13 @@ report/
 
 ## Template
 
-IEEE conference template (`IEEEtran` class). Two-column, standard academic formatting.
-Switch to journal mode by changing `\documentclass[conference]{IEEEtran}` to `\documentclass[journal]{IEEEtran}` in `main.tex`.
+Single-column `article` class, 11pt, A4 paper, 1-inch margins, one-and-a-half line spacing, Times font. Citation style remains IEEE (`\bibliographystyle{IEEEtran}`).
+
+This was chosen over IEEE two-column conference format for readability — the report has substantial methodology, pseudocode, equations, and analysis that read better in a single column.
+
+If you want to switch to IEEE two-column, change the first two lines of `main.tex`:
+
+```latex
+\documentclass[conference]{IEEEtran}
+% (remove geometry, times, authblk, setspace packages — IEEEtran handles these)
+```

@@ -53,3 +53,18 @@ results/figures/*.png
 !results/.gitkeep
 !results/figures/.gitkeep
 *.log
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.synctex(busy)
+*.toc
+*.run.xml
+report/main.pdf

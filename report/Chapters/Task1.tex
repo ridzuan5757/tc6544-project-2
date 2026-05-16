@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	TASK 1 - Problem Definition and Experimental Design
+%   Maps to brief Tasks 1.1, 1.2, 1.3.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lhead{Task 1. \emph{Problem Definition and Experimental Design}}
+\section{Task 1: Problem Definition and Experimental Design}
+\label{Task1}
+
+\subsection{Benchmark TSP Instance (Task 1.1)}
+\label{T1:Benchmark}
+TODO: Describe the chosen benchmark instance (TSPLIB or custom-constructed) with 70--150 cities. Report instance metadata (name, dimension, edge-weight type) and justify the choice.
+
+\subsection{Formal Mathematical Formulation (Task 1.2)}
+\label{T1:Formulation}
+TODO: Provide the formal formulation of the TSP, covering:
+\begin{itemize}
+    \item decision variables ($x_{ij} \in \{0,1\}$ indicating arc $i\to j$ is used);
+    \item objective function (minimisation of total tour distance);
+    \item constraints (each city visited exactly once, closed tour, sub-tour elimination);
+    \item properties relevant to evolutionary optimisation (permutation structure, neighbourhood-graph density, edge symmetry).
+\end{itemize}
+
+\subsection{Experimental-Setup Justification (Task 1.3)}
+\label{T1:Setup}
+TODO: Justify the experimental design:
+\begin{itemize}
+    \item number of independent runs;
+    \item termination criteria (max generations, convergence threshold);
+    \item parameter ranges to be swept (population size, crossover rate, mutation rate, selection method).
+\end{itemize}

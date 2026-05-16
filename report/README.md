@@ -1,8 +1,8 @@
 # Report
 
-LaTeX source for the TC6544 Project 2 research report.
+LaTeX source for the TC6544 Project 2 assignment report.
 
-Adapted from the Steve Gunn / Sunil Patel thesis template (originally used by Ridzuan for his undergraduate honours thesis at USYD).
+Adapted from the Steve Gunn / Sunil Patel thesis template; shares the same template assets as `tc6544/project_1/report/`.
 
 ## Build
 
@@ -32,48 +32,54 @@ report/
 ├── Bibliography.bib        BibTeX bibliography
 ├── latexmkrc               Build configuration
 ├── FrontMatter/
-│   ├── TitlePage.tex       Title page (UKM, TC6544, authors, supervisor)
-│   └── AbstractPage.tex    Abstract (TICKET-23)
+│   ├── TitlePage.tex       Title page (UKM, TC6544, authors, lecturer)
+│   └── AbstractPage.tex    Abstract (~250 words, currently disabled in main.tex)
 ├── Chapters/
-│   ├── Chapter1.tex        Introduction (TICKET-23)
-│   ├── Chapter2.tex        Literature Review (TICKET-22)
-│   ├── Chapter3.tex        Methodology (TICKET-24)
-│   ├── Chapter4.tex        Repair Mechanism Analysis (TICKET-11 + TICKET-21)
-│   ├── Chapter5.tex        Experimental Setup
-│   ├── Chapter6.tex        Results and Discussion (TICKET-25)
-│   └── Chapter7.tex        Conclusion and Future Work (TICKET-26)
+│   ├── Introduction.tex        Mandated by Task 4.2
+│   ├── LiteratureReview.tex    Mandated by Task 4.2
+│   ├── Task1.tex               Problem Definition and Experimental Design (1.1, 1.2, 1.3)
+│   ├── Task2.tex               Algorithm Development (2.1, 2.2)
+│   ├── Task3.tex               Evaluation Methodology and Analysis (3.1, 3.2, 3.3)
+│   ├── Task4.tex               Visualisation and Results (4.1)
+│   └── Conclusion.tex          Conclusion and Future Research Directions
 └── Figures/                Figures included in the report
 ```
 
+## Assignment-Task Mapping
+
+The report sections map directly to the project brief in `../TC6544-Project-Sem2Session2526-1.pdf`:
+
+| Brief task | Source file / subsection |
+|---|---|
+| 1.1 Benchmark TSP instance | `Task1.tex` --- `T1:Benchmark` |
+| 1.2 Mathematical formulation | `Task1.tex` --- `T1:Formulation` |
+| 1.3 Experimental-setup justification | `Task1.tex` --- `T1:Setup` |
+| 2.1 GA design | `Task2.tex` --- `T2:GADesign` |
+| 2.2 Constraint handling via repair | `Task2.tex` --- `T2:Repair` |
+| 3.1 Parameter sensitivity | `Task3.tex` --- `T3:Sensitivity` |
+| 3.2 Performance evaluation | `Task3.tex` --- `T3:Performance` |
+| 3.3 Critical analysis of repair | `Task3.tex` --- `T3:RepairCritique` |
+| 4.1 Visualisation | `Task4.tex` --- `T4:Convergence`, `T4:Boxplots`, `T4:BestTour` |
+| 4.2 Research report (meta) | Structure of this whole document |
+
+Task 4.2 also mandates an abstract, an introduction, a literature review, and a future-work section --- handled by `Introduction.tex`, `LiteratureReview.tex`, and `Conclusion.tex`.
+
 ## Conventions
 
-- **One chapter per file.** Reduces merge conflicts when multiple authors edit in parallel.
-- **Figures** referenced by the report go in `Figures/`. Experiment outputs live in `../results/figures/`; copy the curated subset into `Figures/` for inclusion.
+- **One top-level section per file.** Reduces merge conflicts when multiple authors edit in parallel.
+- **Figures** referenced by the report go in `Figures/`.
 - **Citations** are added to `Bibliography.bib`. BibTeX keys use the form `lastnameyearkeyword`, e.g., `goldberg1989genetic`. Cite with `\cite{key}`.
 - **Cross-references** use the helpers from `Thesis.cls`:
   - `\fref{label}` --- Figure
   - `\tref{label}` --- Table
   - `\eref{label}` --- Equation
-  - `\cref{label}` --- Chapter
-  - `\sref{label}` --- Section
+  - `\sref{label}` --- Section / subsection (e.g.\ `\sref{T3:RepairCritique}`)
   - `\aref{label}` --- Appendix
-- Each chapter file starts with a header comment naming the ticket and owner.
-
-## Document variables
-
-Author names, supervisor, university details, keywords, etc. live in `DocumentVariables.tex`. Edit them once there and they propagate throughout the document.
-
-## Overleaf workflow (Option B from project planning)
-
-1. Initialize the Overleaf project by uploading this directory (zip) or via Overleaf's one-time GitHub import.
-2. Writers edit in Overleaf for live collaboration.
-3. The designated sync owner exports the Overleaf project as zip at the end of each week and commits to `report/` here.
-4. Figures generated in `../results/figures/` are copied (curated) into `Figures/` and uploaded to Overleaf.
+- Labels follow `TX:Topic` for the Task files (e.g.\ `T2:Repair`) and `Section:Topic` for the framing files.
 
 ## Template notes
 
-- Based on the LaTeX `book` class via the `Thesis` document class.
-- Single-sided (`oneside`), 11pt, A4 paper.
+- Based on the LaTeX `book` class via the `Thesis` document class, but the report uses `\section`/`\subsection`/`\subsubsection` (no `\chapter`) so it flows as an assignment rather than a thesis.
+- Single-sided (`oneside`), 11pt, A4 paper, symmetric 1in margins.
 - 1.5 line spacing, default Computer Modern font.
 - Numbered IEEE-style references (`natbib`, `ieeetr` style).
-- The thesis-only front matter (declaration of authorship, dedication, quotation, acknowledgements, acronyms, nomenclature, appendices) was removed for this report. Re-enable any of them by following the patterns in the original skeleton if needed.

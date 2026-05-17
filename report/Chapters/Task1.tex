@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	TASK 1 - Problem Definition and Experimental Design
 %   Maps to brief Tasks 1.1, 1.2, 1.3.
@@ -53,3 +54,60 @@ TODO: Justify the experimental design:
     \item termination criteria (max generations, convergence threshold);
     \item parameter ranges to be swept (population size, crossover rate, mutation rate, selection method).
 \end{itemize}
+=======
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	TASK 1 - Problem Definition and Experimental Design
+%   Maps to brief Tasks 1.1, 1.2, 1.3.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lhead{Task 1. \emph{Problem Definition and Experimental Design}}
+\section{Task 1: Problem Definition and Experimental Design}
+\label{Task1}
+
+\subsection{Benchmark TSP Instance (Task 1.1)}
+\label{T1:Benchmark}
+TODO: Describe the chosen benchmark instance (TSPLIB or custom-constructed) with 70--150 cities. Report instance metadata (name, dimension, edge-weight type) and justify the choice.
+
+The benchmark instance selected for this study is \textbf{kroA100}, which was obtained from the TSPLIB95 library \cite{reinelt1991tsplib}. Table~\ref{tab:instance} summarises the instance metadata.
+
+\begin{table}[h]
+	\centering
+	\caption{kroA100 Benchmark Instance Metadata}
+	\label{tab:instance}
+	\begin{tabular}{ll}
+		\hline
+		\textbf{Property} & \textbf{Details} \\
+		\hline
+		Name & kroA100 \\
+		Dimension & 100 cities \\
+		Edge-Weight Type & EUC\_2D (Two-Dimensional Euclidean Distance) \\
+		Known Optimal Tour Length & 21,282 \\
+		Source & TSPLIB95 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\noindent
+The selection of kroA100 is justified based on four criteria. First, this dataset satisfies the required problem size constraint of $70 \leq n \leq 150$, providing sufficient complexity to demonstrate the behaviour of the 
+Genetic Algorithm without being computationally excessive.
+Next, this dataset belongs to the \textbf{random Euclidean class}, where cities are randomly distributed across a two-dimensional coordinate space that producing a well-spread layout that presents a balanced challenge for the Genetic Algorithm.
+From this dataset, the known optimal tour length of \textbf{21,282}, which means, despite it only has 100 cities and have higher known optimal tour length, this dataset manages to give complexity to the proposed algorithm, the Genetic Algorithm (GA). Plus, this dataset also being referred the most in Genetic Algorithm (GA).
+
+\subsection{Formal Mathematical Formulation (Task 1.2)}
+\label{T1:Formulation}
+TODO: Provide the formal formulation of the TSP, covering:
+\begin{itemize}
+    \item decision variables ($x_{ij} \in \{0,1\}$ indicating arc $i\to j$ is used);
+    \item objective function (minimisation of total tour distance);
+    \item constraints (each city visited exactly once, closed tour, sub-tour elimination);
+    \item properties relevant to evolutionary optimisation (permutation structure, neighbourhood-graph density, edge symmetry).
+\end{itemize}
+
+\subsection{Experimental-Setup Justification (Task 1.3)}
+\label{T1:Setup}
+TODO: Justify the experimental design:
+\begin{itemize}
+    \item number of independent runs;
+    \item termination criteria (max generations, convergence threshold);
+    \item parameter ranges to be swept (population size, crossover rate, mutation rate, selection method).
+\end{itemize}
+>>>>>>> b34a67153fe928f2389c68587e88d81971b2979c

@@ -12,9 +12,21 @@ Investigate, implement, and critically analyse a Genetic Algorithm (GA) for solv
 
 Full specification: see `TC6544-Project-Sem2Session2526-1.pdf`.
 
+## Benchmark instance
+
+| Property | Details |
+|---|---|
+| Name | kroA100 |
+| Dimension | 100 cities |
+| Edge-weight type | EUC_2D |
+| Known optimal tour length | 21,282 |
+| Source | Krolak, Felts & Nelson — via TSPLIB95 (Reinelt, 1991) |
+
+Data files: `data/TSP-dataset/kroA100.tsp`, `data/TSP-datasets-opt-tour/kroA100.opt.tour`
+
 ## Scope highlights
 
-- Benchmark TSP instance with 70–150 cities
+- Benchmark TSP instance: **kroA100** (100 cities)
 - Formal mathematical formulation
 - GA: permutation encoding, selection (tournament/roulette), crossover (PMX/OX/CX), mutation (swap/inversion)
 - Repair mechanism (duplicate removal + missing city insertion) — **graded focus**

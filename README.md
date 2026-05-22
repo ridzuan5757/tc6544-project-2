@@ -100,7 +100,8 @@ src/
   ga/         GA core: encoding, selection, crossover, mutation, main loop
   repair/     Constraint handling: repair, penalty, feasibility-preserving
 experiments/  Experiment runners and configs
-notebooks/    Exploratory analysis and figure generation
+notebooks/    One notebook per ticket (e.g. 04_instance_loader.ipynb → TICKET-04)
 data/         TSPLIB benchmark instances
 results/      Experiment outputs (CSV, figures)
+tests/        Unit tests
 ```

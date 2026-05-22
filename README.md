@@ -104,3 +104,16 @@ notebooks/    Exploratory analysis and figure generation
 data/         TSPLIB benchmark instances
 results/      Experiment outputs (CSV, figures)
 ```
+
+
+## Dataset
+The benchmark instance used in this task is **kroA100**, obtained from: [TSPLIB95](
+https://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp.html).
+
+| Property | Details |
+|---|---|
+| Name | kroA100 |
+| City Count | 100 |
+| Known Optimal Tour Length | 21,282 |
+| Source | TSPLIB95 — Reinelt, G. (1991) |
+| Coordinate Format | EUC_2D |

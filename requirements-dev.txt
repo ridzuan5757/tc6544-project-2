@@ -1,5 +1,0 @@
-pytest>=8.0
-nbmake>=1.5
-ruff>=0.6
-pre-commit>=3.7
-nbstripout>=0.7

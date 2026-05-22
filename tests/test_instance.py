@@ -47,5 +47,5 @@ class TestLoadTsp:
         assert dist[2, 3] == pytest.approx(1.0)
 
     def test_file_not_found(self):
-        with pytest.raises(Exception):
+        with pytest.raises(FileNotFoundError):
             load_tsp("nonexistent.tsp")

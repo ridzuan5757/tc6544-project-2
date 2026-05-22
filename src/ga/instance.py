@@ -12,7 +12,6 @@ def load_tsp(path):
     """
     problem = tsplib95.load(str(path))
     nodes = list(problem.get_nodes())
-    n = len(nodes)
 
     coords = np.array([problem.node_coords[node] for node in nodes], dtype=np.float64)
 

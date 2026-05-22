@@ -91,7 +91,7 @@ All 27 tickets are tracked as GitHub issues in this repository.
 
 ## Deliverables
 
-- Source code (GA implementation, repair mechanism, experiment runner)
+- Notebooks (GA implementation, repair mechanism, experiments)
 - Experiment results (CSVs in `results/`)
 - Figures (convergence curves, boxplots, tour visualizations)
 - Research report (PDF)
@@ -99,22 +99,16 @@ All 27 tickets are tracked as GitHub issues in this repository.
 ## Development setup
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-python -c "import ga, repair; print('ok')"
+pip install -r requirements.txt
 ```
 
 ### Project layout
 
 ```
-src/
-  ga/         GA core: encoding, selection, crossover, mutation, main loop
-  repair/     Constraint handling: repair, penalty, feasibility-preserving
-experiments/  Experiment runners and configs
-notebooks/    Exploratory analysis and figure generation
+notebooks/    One notebook per ticket (e.g. 04_instance_loader.ipynb → TICKET-04)
 data/         TSPLIB benchmark instances
 results/      Experiment outputs (CSV, figures)
+report/       LaTeX report
 ```
 
 

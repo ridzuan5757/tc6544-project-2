@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	TASK 1 - Problem Definition and Experimental Design
 %   Maps to brief Tasks 1.1, 1.2, 1.3.
@@ -9,9 +8,8 @@
 
 \subsection{Benchmark TSP Instance (Task 1.1)}
 \label{T1:Benchmark}
-%TODO: Describe the chosen benchmark instance (TSPLIB or custom-constructed) with 70--150 cities. Report instance metadata (name, dimension, edge-weight type) and justify the choice.
 
-The benchmark instance selected for this study is \textbf{kroA100}, which was obtained from the TSPLIB95 library \cite{reinelt1991tsplib}. Table~\ref{tab:instance} summarises the instance metadata.
+The benchmark instance selected for this study is \textbf{kroA100}, a 100-city Traveling Salesman Problem (TSP) instance obtained from TSPLIB95 \cite{reinelt1991tsplib}. The assignment requires an instance with 70--150 cities, and kroA100 satisfies this requirement while remaining computationally manageable for repeated Genetic Algorithm (GA) experiments.
 
 \begin{table}[h]
 	\centering
@@ -23,91 +21,96 @@ The benchmark instance selected for this study is \textbf{kroA100}, which was ob
 		\hline
 		Name & kroA100 \\
 		Dimension & 100 cities \\
-		Edge-Weight Type & EUC\_2D (Two-Dimensional Euclidean Distance) \\
-		Known Optimal Tour Length & 21,282 \\
-		Source & TSPLIB95 \\
+		Edge-weight type & EUC\_2D \\
+		Known optimal tour length & 21,282 \\
+		Instance class & Symmetric Euclidean TSP \\
+		Source & TSPLIB95 \cite{reinelt1991tsplib} \\
 		\hline
 	\end{tabular}
 \end{table}
 
-\noindent
-The selection of kroA100 is justified based on four criteria. First, this dataset satisfies the required problem size constraint of $70 \leq n \leq 150$, providing sufficient complexity to demonstrate the behaviour of the 
-Genetic Algorithm without being computationally excessive.
-Next, this dataset belongs to the \textbf{random Euclidean class}, where cities are randomly distributed across a two-dimensional coordinate space that producing a well-spread layout that presents a balanced challenge for the Genetic Algorithm.
-From this dataset, the known optimal tour length of \textbf{21,282}, which means, despite it only has 100 cities and have higher known optimal tour length, this dataset manages to give complexity to the proposed algorithm, the Genetic Algorithm (GA). Plus, this dataset also being referred the most in Genetic Algorithm (GA).
+Four TSPLIB95 candidates were considered: \textbf{ch150}, \textbf{eil101}, \textbf{kroA100}, and \textbf{lin105}. All four instances are within the required size range and use the EUC\_2D distance type. Among them, kroA100 was selected because it has a moderate dimension of 100 cities, a published optimal tour length, and a widely used random Euclidean layout. The known optimum allows the quality of GA solutions to be evaluated using absolute tour length and relative error, while the 100-city size is large enough to make exhaustive search infeasible but small enough to support multiple independent runs and parameter sweeps within the project timeline.
+
+For EUC\_2D instances, each city $i$ has coordinates $(x_i,y_i)$ and the distance between cities is computed as
+\[
+d_{ij} = \left\lfloor \sqrt{(x_i-x_j)^2 + (y_i-y_j)^2} + 0.5 \right\rfloor .
+\]
+Because the distance is symmetric, $d_{ij}=d_{ji}$, and the TSP objective is to find the shortest closed tour through all 100 cities.
 
 \subsection{Formal Mathematical Formulation (Task 1.2)}
 \label{T1:Formulation}
-TODO: Provide the formal formulation of the TSP, covering:
-\begin{itemize}
-    \item decision variables ($x_{ij} \in \{0,1\}$ indicating arc $i\to j$ is used);
-    \item objective function (minimisation of total tour distance);
-    \item constraints (each city visited exactly once, closed tour, sub-tour elimination);
-    \item properties relevant to evolutionary optimisation (permutation structure, neighbourhood-graph density, edge symmetry).
-\end{itemize}
+
+The selected instance can be represented as a complete weighted graph $G=(V,E)$, where $V=\{1,2,\ldots,n\}$ is the set of cities, $n=100$ for kroA100, and $E=\{(i,j): i,j\in V,\ i\neq j\}$ is the set of possible directed arcs between different cities. The cost of travelling from city $i$ to city $j$ is denoted by $d_{ij}$.
+
+\subsubsection*{Decision Variables}
+For each ordered pair of distinct cities $(i,j)$, define
+\[
+x_{ij} =
+\begin{cases}
+1, & \text{if the tour travels directly from city } i \text{ to city } j,\\
+0, & \text{otherwise.}
+\end{cases}
+\]
+Thus, $x_{ij}$ indicates whether the arc from city $i$ to city $j$ is included in the final tour.
+
+\subsubsection*{Objective Function}
+The objective is to minimise the total tour distance:
+\[
+\min Z = \sum_{i=1}^{n}\sum_{\substack{j=1\\j\neq i}}^{n} d_{ij}x_{ij}.
+\]
+Here, $Z$ is the total distance of the selected closed tour. A better solution has a smaller value of $Z$.
+
+\subsubsection*{Constraints}
+Each city must be left exactly once:
+\[
+\sum_{\substack{j=1\\j\neq i}}^{n} x_{ij} = 1,
+\quad \forall i \in V.
+\]
+
+Each city must be entered exactly once:
+\[
+\sum_{\substack{i=1\\i\neq j}}^{n} x_{ij} = 1,
+\quad \forall j \in V.
+\]
+
+The solution must form one closed tour rather than several disconnected cycles. This is enforced using subtour elimination constraints:
+\[
+\sum_{i\in S}\sum_{\substack{j\in S\\j\neq i}} x_{ij} \leq |S|-1,
+\quad \forall S \subset V,\quad 2 \leq |S| \leq n-1.
+\]
+These constraints prevent any proper subset of cities from forming its own closed cycle. Combined with the incoming and outgoing degree constraints, they ensure that all cities belong to a single Hamiltonian cycle that returns to the starting city.
+
+Finally, the decision variables are binary:
+\[
+x_{ij}\in\{0,1\},
+\quad \forall i,j\in V,\quad i\neq j.
+\]
+
+\subsubsection*{Properties Relevant to Evolutionary Optimisation}
+The TSP is suitable for evolutionary optimisation because a valid solution can be encoded as a permutation of cities, for example
+\[
+[1,5,12,8,20,\ldots,100].
+\]
+The return from the last city to the first city is assumed when calculating fitness. For a symmetric TSP with $n$ cities, the number of unique tours is $(n-1)!/2$ after accounting for equivalent rotations and reversals. For $n=100$, this search space is far too large for exhaustive enumeration.
+
+This permutation structure is important for GA design. Crossover and mutation operators must preserve, or repair, the condition that every city appears exactly once. If an operator produces repeated or missing cities, the chromosome becomes infeasible and a repair mechanism is required. The Euclidean structure of kroA100 is also useful because short edges and neighbouring city groups can act as building blocks that are preserved and recombined during evolution. Therefore, the formulation links directly to the GA representation, fitness function, feasibility repair process, and later analysis of convergence and diversity.
 
 \subsection{Experimental-Setup Justification (Task 1.3)}
 \label{T1:Setup}
-TODO: Justify the experimental design:
-\begin{itemize}
-    \item number of independent runs;
-    \item termination criteria (max generations, convergence threshold);
-    \item parameter ranges to be swept (population size, crossover rate, mutation rate, selection method).
-\end{itemize}
-=======
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%	TASK 1 - Problem Definition and Experimental Design
-%   Maps to brief Tasks 1.1, 1.2, 1.3.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\lhead{Task 1. \emph{Problem Definition and Experimental Design}}
-\section{Task 1: Problem Definition and Experimental Design}
-\label{Task1}
 
-\subsection{Benchmark TSP Instance (Task 1.1)}
-\label{T1:Benchmark}
-TODO: Describe the chosen benchmark instance (TSPLIB or custom-constructed) with 70--150 cities. Report instance metadata (name, dimension, edge-weight type) and justify the choice.
+The experiments will use \textbf{30 independent runs} for each configuration. Independent runs are necessary because GAs are stochastic algorithms: different random seeds can produce different initial populations, crossover outcomes, mutation events, and final tours. Thirty runs provide enough repeated observations to report mean, standard deviation, best result, and boxplot-based comparisons.
 
-The benchmark instance selected for this study is \textbf{kroA100}, which was obtained from the TSPLIB95 library \cite{reinelt1991tsplib}. Table~\ref{tab:instance} summarises the instance metadata.
+Each run will terminate after a maximum of \textbf{1000 generations}, or earlier if the best-so-far tour length does not improve for \textbf{150 consecutive generations}. This combines a fixed computational budget with a convergence-based stopping rule, reducing wasted computation when the population has stagnated.
 
-\begin{table}[h]
-	\centering
-	\caption{kroA100 Benchmark Instance Metadata}
-	\label{tab:instance}
-	\begin{tabular}{ll}
-		\hline
-		\textbf{Property} & \textbf{Details} \\
-		\hline
-		Name & kroA100 \\
-		Dimension & 100 cities \\
-		Edge-Weight Type & EUC\_2D (Two-Dimensional Euclidean Distance) \\
-		Known Optimal Tour Length & 21,282 \\
-		Source & TSPLIB95 \\
-		\hline
-	\end{tabular}
-\end{table}
-
-\noindent
-The selection of kroA100 is justified based on four criteria. First, this dataset satisfies the required problem size constraint of $70 \leq n \leq 150$, providing sufficient complexity to demonstrate the behaviour of the 
-Genetic Algorithm without being computationally excessive.
-Next, this dataset belongs to the \textbf{random Euclidean class}, where cities are randomly distributed across a two-dimensional coordinate space that producing a well-spread layout that presents a balanced challenge for the Genetic Algorithm.
-From this dataset, the known optimal tour length of \textbf{21,282}, which means, despite it only has 100 cities and have higher known optimal tour length, this dataset manages to give complexity to the proposed algorithm, the Genetic Algorithm (GA). Plus, this dataset also being referred the most in Genetic Algorithm (GA).
-
-\subsection{Formal Mathematical Formulation (Task 1.2)}
-\label{T1:Formulation}
-TODO: Provide the formal formulation of the TSP, covering:
-\begin{itemize}
-    \item decision variables ($x_{ij} \in \{0,1\}$ indicating arc $i\to j$ is used);
-    \item objective function (minimisation of total tour distance);
-    \item constraints (each city visited exactly once, closed tour, sub-tour elimination);
-    \item properties relevant to evolutionary optimisation (permutation structure, neighbourhood-graph density, edge symmetry).
-\end{itemize}
-
-\subsection{Experimental-Setup Justification (Task 1.3)}
-\label{T1:Setup}
-TODO: Justify the experimental design:
-\begin{itemize}
-    \item number of independent runs;
-    \item termination criteria (max generations, convergence threshold);
-    \item parameter ranges to be swept (population size, crossover rate, mutation rate, selection method).
-\end{itemize}
->>>>>>> b34a67153fe928f2389c68587e88d81971b2979c
+The parameter sensitivity analysis will sweep the following ranges:
+\[
+\text{population size} \in \{50,100,200\},
+\quad
+\text{crossover rate} \in \{0.70,0.85,0.95\},
+\]
+\[
+\text{mutation rate} \in \{0.01,0.05,0.10\},
+\quad
+\text{selection method} \in \{\text{tournament},\text{roulette wheel}\}.
+\]
+These ranges cover low, medium, and high settings for the main GA parameters while keeping the total experiment size practical. The resulting comparisons will support the later analysis of solution quality, convergence behaviour, robustness, computational cost, and the effect of feasibility repair.

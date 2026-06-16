@@ -1,11 +1,38 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	ABSTRACT PAGE
 %   TICKET-23 --- Abstract (~250 words)
-%   Owner: Theory / Writing Lead
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \addtotoc{Abstract}
 \abstract{\addtocontents{toc}{\vspace{1em}}
 
-TODO: Summarize the problem (single-objective TSP), the GA-with-repair approach, the experimental scope (benchmark, parameter sweep, comparative analysis), the key findings, and the contributions. Target ~250 words.
+The Traveling Salesman Problem (TSP) is a classical combinatorial
+optimisation problem that seeks the shortest closed tour visiting each city
+exactly once.  Because the search space grows factorially with the number of
+cities, exact methods become impractical for non-trivial instances, making
+metaheuristic approaches such as Genetic Algorithms (GAs) attractive
+alternatives.  A persistent challenge when applying GAs to the TSP is that
+standard crossover and mutation operators can produce infeasible solutions
+--- chromosomes that visit some cities more than once while omitting others
+--- leading to meaningless fitness evaluations and distorted selection
+pressure.
+
+This report investigates the design, implementation, and critical analysis
+of a GA for the static single-objective TSP with a focus on feasibility
+repair mechanisms.  We implement three permutation-preserving crossover
+operators (PMX, OX, CX), two mutation operators (swap, inversion), and a
+repair mechanism that diagnoses constraint violations and restores
+feasibility through duplicate removal and missing-city insertion.  Using the
+kroA100 benchmark instance (100 cities, known optimal tour length 21\,282),
+we conduct a comparative experiment of 30 independent runs per
+constraint-handling strategy, evaluating solution quality, convergence
+behaviour, and population diversity.  A Wilcoxon signed-rank test confirms a
+statistically significant difference between repair-enabled and unrepaired
+runs ($p < 0.001$), demonstrating that without repair, the GA converges to
+artificially low but invalid fitness values.  Parameter sensitivity analysis
+further explores the interaction between GA configuration and the repair
+mechanism's effectiveness.  Our findings highlight the critical role of
+constraint handling in permutation-based evolutionary optimisation and
+provide empirical evidence for the trade-offs between feasibility
+enforcement and search-space exploration.
 }
 \clearpage

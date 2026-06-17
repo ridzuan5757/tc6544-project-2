@@ -34,7 +34,89 @@ TODO: Swap and inversion; mutation rate.
 
 \subsubsection{Sources of Infeasibility}
 \label{T2:Infeasibility}
-TODO: Why infeasible solutions arise in permutation-based GAs for the TSP, with worked examples for each crossover operator (which operators break the permutation property, and how).
+A TSP chromosome is feasible only if it is a permutation of the city set. For an
+$n$-city instance, every city in $\{0,1,\ldots,n-1\}$ must appear exactly
+once; the return from the final city to the first is then added during fitness
+evaluation. Infeasibility arises when crossover treats this chromosome as an
+ordinary fixed-position string. A standard one-point, two-point, or uniform
+crossover can copy values independently without checking whether a copied city
+already appears elsewhere in the child. If one city is duplicated, another city
+must be missing because the chromosome length is fixed.
+
+Consider the two parents used in the crossover notebook:
+\[
+A=[0,1,2,3,4,5,6,7], \qquad
+B=[2,6,4,0,5,7,1,3],
+\]
+with cut points at positions $2$ and $4$. A naive two-point crossover that starts
+from $B$ and blindly overwrites the segment with $A_{2..4}=[2,3,4]$ produces
+\[
+[2,6,2,3,4,7,1,3].
+\]
+The violation can be seen position by position. At position 2, $B$'s value 4 is
+replaced by 2, creating a second copy of city 2 because city 2 was already at
+position 0. At position 3, $B$'s value 0 is replaced by 3, removing city 0 and
+creating a second copy of city 3 because city 3 was already at position 7. At
+position 4, $B$'s value 5 is replaced by 4, removing city 5. The resulting child
+therefore duplicates cities 2 and 3 and misses cities 0 and 5. It has eight
+entries, but it is not a Hamiltonian tour.
+
+Permutation-aware crossover operators avoid this failure mode by adding logic
+that preserves the city set. Partially Mapped Crossover (PMX) copies the selected
+segment from one parent and uses the segment mapping to redirect displaced
+values. In the example above, the copied segment creates mappings
+$2\leftrightarrow4$, $3\leftrightarrow0$, and $4\leftrightarrow5$. After copying
+$[2,3,4]$ into the child, value 0 from the second parent is routed through the
+mapping until it reaches the open outside position 7, while value 5 is routed to
+position 0. The remaining empty positions are filled from the second parent,
+producing a valid child such as
+\[
+[5,6,2,3,4,7,1,0].
+\]
+The mapping chain is the key feasibility mechanism: every displaced city is sent
+to a unique unoccupied position rather than being copied on top of an existing
+city.
+
+Order Crossover (OX) preserves feasibility in a different way. It first copies a
+contiguous segment from the first parent, then scans the second parent in order
+from just after the second cut point, skipping every value already present in
+the copied segment. For the same parents, after copying $[2,3,4]$, the scan of
+$B$ gives $7,1,3,2,6,4,0,5$. OX skips 3, 2, and 4 because they already appear in
+the segment, leaving $[7,1,6,0,5]$. These are exactly the missing cities, so they
+fill the remaining five positions starting at position 5 and wrapping around.
+This produces
+\[
+[0,5,2,3,4,7,1,6].
+\]
+Thus OX combines the copied segment with its complement from the other parent;
+no duplicate can be inserted because duplicates are explicitly skipped.
+
+Cycle Crossover (CX) preserves feasibility by discovering cycles in the
+position-wise mapping between the parents. Starting at position 0 in the example,
+$B_0=2$, and city 2 is at position 2 in $A$; then $B_2=4$, city 4 is at position
+4 in $A$; then $B_4=5$, city 5 is at position 5 in $A$; then $B_5=7$, city 7 is
+at position 7 in $A$; then $B_7=3$, city 3 is at position 3 in $A$; finally
+$B_3=0$, city 0 is at position 0 in $A$, returning to the start. This gives one
+cycle of positions $(0,2,4,5,7,3)$; the remaining positions form the cycle
+$(1,6)$. CX alternates which parent supplies whole cycles, for example producing
+\[
+[0,6,2,3,4,5,1,7].
+\]
+The cycles partition the chromosome positions, so every position is filled once
+and the inherited values still form a complete permutation.
+
+The downstream consequence of infeasible offspring is that their fitness values
+are meaningless for the TSP. A chromosome with duplicate cities may skip an
+expensive missing city and therefore appear to have an artificially short tour
+length. Selection then treats this invalid distance as a legitimate objective
+value, which corrupts selection pressure: tournament or roulette selection may
+favour infeasible chromosomes, invalid genetic material can spread through the
+population, and the search can converge toward low-cost strings that do not
+represent tours. For this reason, the GA must either use feasibility-preserving
+operators such as PMX, OX, and CX, or apply a repair mechanism before fitness
+evaluation. The repair mechanism is especially important for naive crossover
+baselines, implementation errors, and comparisons with alternative
+constraint-handling strategies.
 
 \subsubsection{Repair Mechanism Design}
 \label{T2:RepairDesign}

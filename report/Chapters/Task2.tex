@@ -19,7 +19,33 @@ TODO: Random / nearest-neighbour-seeded / hybrid.
 
 \subsubsection{Selection Mechanism}
 \label{T2:Selection}
-TODO: Tournament, roulette wheel; tournament size $k$, selection pressure.
+Two selection mechanisms are implemented in this study, namely tournament selection and roulette wheel selection. Both methods are designed to be swappable via a single configuration parameter, allowing direct comparison of their effect on the genetic algorithm's convergence behaviour.
+
+\textbf{Tournament Selection}
+
+Tournament selection operates by randomly sampling $k$ chromosomes from the current population and selecting the individual with the lowest tour length as the parent. In this study, $k = 3$ is used as the default tournament size. A higher value of $k$ increases selection pressure, causing the algorithm to favour fitter individuals more aggressively, while a lower value introduces more randomness and preserves population diversity.
+
+Formally, given a population $P$ of size $N$ and a set of tournament candidates $C \subseteq P$ where $|C| = k$, the selected individual $s$ is defined as:
+
+\begin{equation}
+	s = \arg\min_{i \in C} f(i)
+\end{equation}
+
+where $f(i)$ denotes the tour length of individual $i$.
+
+\textbf{Roulette Wheel Selection}
+
+Roulette wheel selection assigns each chromosome a selection probability inversely proportional to its tour length. Since the TSP is a minimisation problem, shorter tours must receive higher selection probabilities. This is achieved by computing the inverse fitness for each individual and normalising the values to form a probability distribution.
+
+Given a population of $N$ individuals with fitnesses $f_1, f_2, \ldots, f_N$, the selection probability of individual $i$ is:
+
+\begin{equation}
+	p_i = \frac{1/f_i}{\sum_{j=1}^{N} 1/f_j}
+\end{equation}
+
+Unlike tournament selection, roulette wheel selection allows weaker individuals to occasionally be selected, which can help maintain genetic diversity in the early stages of the search.
+
+Both selection methods are wrapped in a unified \texttt{select} function that accepts a configuration parameter specifying the desired method. This strategy pattern allows the selection operator to be changed without modifying the GA loop, supporting the parameter sensitivity analysis conducted in Section~\ref{T3:Sensitivity}.
 
 \subsubsection{Crossover Operators}
 \label{T2:Crossover}

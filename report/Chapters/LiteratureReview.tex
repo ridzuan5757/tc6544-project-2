@@ -7,16 +7,170 @@
 \section{Literature Review}
 \label{SecLiteratureReview}
 
-TODO: Survey GAs applied to TSP, constraint handling in EAs (Coello, Michalewicz), repair mechanisms in permutation EAs, and comparison studies of crossover operators (PMX, OX, CX) for TSP. Minimum 10 academic citations.
+The Traveling Salesman Problem (TSP) has long been used as a
+benchmark for combinatorial optimisation because it combines a simple
+objective function with a large permutation search space. Exact approaches
+can solve selected benchmark instances, but the factorial growth of the
+search space motivates metaheuristic methods for repeated experimentation
+and algorithm analysis~\cite{applegate2006traveling,reinelt1991tsplib}.
+Genetic Algorithms (GAs), introduced by Holland and popularised by
+Goldberg, are particularly relevant because they search with a population of
+candidate tours rather than a single incumbent solution
+\cite{holland1975adaptation,goldberg1989genetic}. For the TSP, however,
+the success of a GA depends strongly on how tours are represented, how
+crossover and mutation preserve permutation feasibility, and how constraint
+violations are handled when infeasible offspring are created.
 
 \subsection{Genetic Algorithms for the TSP}
 \label{Lit:GAforTSP}
-TODO.
+
+The most common GA representation for the TSP is a permutation of city
+indices. This direct encoding is natural because each chromosome position
+contains one city and a complete chromosome defines the visit order.
+However, this representation also makes the problem sensitive to genetic
+operator design: a chromosome is feasible only when every city appears
+exactly once. The classic review by Larra{\~n}aga et al. shows that GA
+research for the TSP developed around this representation issue, comparing
+path, adjacency, ordinal, matrix, and other encodings together with the
+operators that act on them~\cite{larranaga1999genetic}. Later reviews and
+historical summaries similarly identify crossover design, mutation design,
+hybrid local search, and diversity preservation as recurring themes in
+GA-TSP work~\cite{scholz2019historicalreview,cicirello2023permutationoperators}.
+
+Permutation-specific recombination is important because ordinary string
+crossover can destroy the city set. Early operators such as Partially Mapped
+Crossover (PMX), Order Crossover (OX), and Cycle Crossover (CX) were
+therefore developed to recombine parent tours while retaining a valid
+permutation~\cite{goldberg1985alleles,davis1985applying,oliver1987study}.
+These operators preserve different structures. PMX emphasizes positional
+mapping, OX preserves relative order, and CX preserves cycles of
+position-wise inheritance. More recent operator surveys make this distinction
+explicit by classifying permutation operators according to the features they
+transmit, including absolute positions, undirected edges, directed edges,
+precedences, and cyclic precedences~\cite{cicirello2023permutationoperators}.
+This is directly relevant to the present project because TSP tour length is
+computed from adjacent city pairs. Positional diversity alone is therefore
+insufficient to describe the search; edge overlap and edge diversity provide
+a more problem-specific view of population structure.
+
+State-of-the-art GA variants for the TSP often go beyond a plain
+generational GA. Liu uses edge swapping and local search to obtain strong
+results on large TSP benchmarks, emphasising that edge-based structure is
+central to tour quality~\cite{liu2014powerfulga}. Eremeev and Kovalenko
+similarly show, for asymmetric TSP instances, that recombination design,
+neighbourhood-based mutation, local search, restarts, and population
+diversity all influence performance~\cite{eremeev2017optimalrecombination}.
+These studies set context rather than direct performance targets for this
+coursework project: the implementation here remains intentionally focused on
+GA fundamentals, repair mechanisms, and comparative constraint handling on
+kroA100.
 
 \subsection{Constraint Handling in Evolutionary Algorithms}
 \label{Lit:ConstraintHandling}
-TODO.
+
+Constraint handling is a general challenge in evolutionary computation.
+Coello Coello surveys theoretical and numerical techniques used with
+evolutionary algorithms, including penalty functions, special
+representations, repair methods, and feasibility-based
+selection~\cite{coello2002constraint}. Michalewicz and Schoenauer similarly
+argue that constraints are not an implementation detail but part of the
+problem structure that must be reflected in representation, operators, or
+evaluation~\cite{michalewicz1996evolutionary}. These ideas apply directly
+to the TSP: the ``visit every city exactly once'' condition is not a minor
+side constraint, but the property that makes a chromosome represent a valid
+tour.
+
+Penalty functions are one common approach. They leave infeasible solutions
+in the population but add a cost proportional to constraint violation. This
+approach is easy to implement, but it introduces a tuning problem: the
+penalty must be large enough to discourage infeasible solutions but not so
+large that the search loses useful information too early. Chehouri et al.
+make this critique explicit and propose a violation-based alternative to
+avoid penalty-parameter tuning in constrained GA
+optimisation~\cite{chehouri2016violationfactor}. In the TSP setting, this
+trade-off is especially visible. If a chromosome skips cities because of
+duplicates, its raw tour length may be artificially low, so weak penalties
+can reward invalid tours. Excessive penalties, however, may remove
+offspring that contain useful partial order or edge information.
+
+Another approach is to prevent infeasibility by construction. PMX, OX, CX,
+and other permutation-aware operators are examples of feasibility-preserving
+operators for TSP chromosomes. This approach is attractive because every
+offspring can be evaluated directly as a valid tour. Its limitation is that
+it restricts the set of admissible operators and may make it harder to study
+the effect of infeasible offspring. For this reason, the present project
+uses both feasibility-preserving operators and a deliberately naive crossover
+baseline, so that the effect of repair can be observed rather than assumed.
 
 \subsection{Repair Mechanisms in Permutation-based EAs}
 \label{Lit:Repair}
-TODO.
+
+Repair mechanisms form a third constraint-handling strategy. Instead of
+discarding or penalising infeasible chromosomes, repair modifies them into
+feasible candidates before evaluation. Padhye et al. discuss
+feasibility-preserving repair strategies in evolutionary optimisation and
+highlight an important caveat: repair can restore feasibility, but it can
+also introduce search bias or reduce exploration if repaired solutions are
+systematically pushed into particular regions of the feasible
+space~\cite{padhye2015feasibilitypreserving}. Salcedo-Sanz's survey of
+repair methods makes the same issue central by treating repair as a broad
+class of constraint-handling techniques rather than a simple preprocessing
+step~\cite{salcedosanz2009repair}.
+
+For permutation problems, repair usually acts on duplicate, missing, or
+misordered genes. In the TSP case studied here, a naive crossover can create
+offspring with duplicated cities and omitted cities. A repair mechanism can
+scan the chromosome, retain one copy of each duplicated city, and insert the
+missing cities into the remaining positions. This restores the formal TSP
+constraint and prevents invalid short tours from dominating selection.
+However, repair is not neutral. Random insertion may preserve diversity but
+disturb useful edges. Positional insertion may retain more chromosome
+structure but reinforce parent-position bias. Nearest-neighbour insertion
+may improve local tour quality but also accelerate convergence toward a
+narrower set of edges. These trade-offs motivate the project's explicit
+tracking of best fitness, mean fitness, Hamming diversity, edge overlap, and
+edge diversity.
+
+The critical point for this project is that feasibility and quality are
+different properties. A repaired chromosome is valid, but it is not
+necessarily a high-quality tour, and the repair operation may alter the
+building blocks inherited from the parents. Recent TSP crossover work
+reinforces this distinction by showing that tour symmetries, rotations,
+reversals, and edge structure affect whether fit parents produce fit
+offspring~\cite{uray2023csrx}. Thus, repair should be evaluated not only by
+whether it produces feasible tours, but also by its effect on solution
+quality, diversity, and convergence.
+
+\subsection{Comparison Studies of TSP Operators}
+\label{Lit:CrossoverStudies}
+
+Empirical crossover and mutation studies provide practical context for the
+operator choices in this project. Abdoun and Abouchabaka compare several
+crossover operators for the TSP, including OX, PMX, UPMX, CX, and NWOX, and
+report strong performance for OX on their benchmark
+setting~\cite{abdoun2012adaptivecrossover}. Abdoun, Abouchabaka, and Tajani
+perform a related mutation-operator study, emphasising that representation,
+selection, crossover, mutation, and operator probabilities jointly define a
+GA variant~\cite{abdoun2012mutationoperators}. These findings support the
+project's modular notebook structure, where representation, selection,
+crossover, mutation, diversity metrics, repair, and experiments are separated
+so that their effects can be analysed.
+
+More recent crossover studies also use TSPLIB-scale instances similar to
+this project. Thanh et al. test combined crossover mechanisms on Euclidean
+TSPLIB instances ranging from 51 to 575 cities, including kroA100 and
+lin105~\cite{thanh2020combinationcrossover}. Their results reinforce that
+operator design can affect both mean and best tour quality. Uray et al.
+extend this line of work by designing crossover operators around symmetric
+TSP invariances such as circular shifts and reversal of tours
+\cite{uray2023csrx}. Together, these studies justify treating crossover as a
+core experimental factor rather than a fixed implementation detail.
+
+In summary, the literature supports the design of this project in three
+ways. First, GA-TSP performance depends on permutation-aware operators and
+population diversity. Second, infeasible chromosomes can distort selection
+pressure if evaluated directly. Third, repair mechanisms are useful but must
+be analysed critically because restoring feasibility can change diversity,
+edge structure, and convergence behaviour. These points motivate the
+repair-focused experiments and the comparative analysis reported in the
+following sections.

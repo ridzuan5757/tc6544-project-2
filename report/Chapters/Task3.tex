@@ -27,10 +27,134 @@ TODO: Evaluate the GA on:
 
 \subsection{Critical Analysis of Repair Mechanism (Task 3.3)}
 \label{T3:RepairCritique}
-TODO: Provide a detailed discussion of:
-\begin{itemize}
-    \item effectiveness of the repair strategy;
-    \item trade-offs between feasibility enforcement and exploration;
-    \item comparison with alternative constraint-handling approaches (penalty functions, feasibility-preserving operators).
-\end{itemize}
-This is the key-focus analysis flagged in the brief.
+This section evaluates the repair mechanism using the controlled comparison
+from TICKET-17. Both experimental arms used the same GA settings on kroA100:
+population size 100, 500 generations, tournament selection, naive single-point
+crossover, swap mutation, and 30 independent seeds. The only experimental
+difference was whether duplicate/missing-city repair was applied after
+crossover and mutation.
+
+\begin{table}[h]
+    \centering
+    \caption{Sanity check showing that naive crossover creates infeasibility and that repair restores a valid permutation.}
+    \label{tab:repair-sanity}
+    \begin{tabular}{l r}
+        \hline
+        Observation from TICKET-17 sanity check & Value \\
+        \hline
+        Parent A valid permutation & True \\
+        Parent B valid permutation & True \\
+        Naive-crossover child valid permutation & False \\
+        Duplicate positions in child & 23 \\
+        Missing cities in child & 23 \\
+        Repaired child valid permutation & True \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Final-generation summary over 30 paired runs per strategy. Lower best fitness is numerically smaller, but the no-repair arm is infeasible under the TSP constraint.}
+    \label{tab:repair-summary}
+    \begin{tabular}{l r r r r r}
+        \hline
+        Strategy & Mean best & Std. & Min. best & Gap to optimum & Final diversity \\
+        \hline
+        No repair & 38129.27 & 4135.41 & 28805.71 & 79.2\% & 0.0100 \\
+        Repair & 49777.84 & 3186.86 & 43890.51 & 133.9\% & 0.0128 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Mean best-fitness and diversity checkpoints from TICKET-17 convergence logs. Values are averaged over 30 seeds per strategy.}
+    \label{tab:repair-convergence}
+    \begin{tabular}{l r r r}
+        \hline
+        Strategy & Generation & Mean best fitness & Mean diversity \\
+        \hline
+        No repair & 0 & 151041.61 & 0.9900 \\
+        No repair & 100 & 61144.48 & 0.0360 \\
+        No repair & 250 & 43844.78 & 0.0165 \\
+        No repair & 500 & 38129.27 & 0.0100 \\
+        Repair & 0 & 151041.61 & 0.9900 \\
+        Repair & 100 & 77552.75 & 0.0413 \\
+        Repair & 250 & 59334.24 & 0.0247 \\
+        Repair & 500 & 49777.84 & 0.0128 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Paired Wilcoxon signed-rank test on final best fitness from the 30 matched seeds in TICKET-17.}
+    \label{tab:repair-wilcoxon}
+    \begin{tabular}{l r}
+        \hline
+        Test quantity & Value \\
+        \hline
+        Statistic & 0.00 \\
+        $p$-value & $1.86 \times 10^{-9}$ \\
+        Significance level & 0.05 \\
+        Decision & Reject equal medians \\
+        Mean paired difference, repair $-$ no repair & 11648.57 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The repair mechanism is effective at enforcing feasibility in the scenario for
+which it was designed. The TICKET-17 sanity check shows that naive crossover
+changed two valid parents into an invalid child with 23 duplicate positions and
+23 missing cities, while the repair step converted that same child back into a
+valid permutation (\tref{tab:repair-sanity}). This establishes that the repair
+operator is not cosmetic in this experiment: without it, the GA evaluates
+chromosomes that do not represent Hamiltonian tours (\tref{tab:repair-sanity}).
+
+The final-fitness results must be interpreted through feasibility, not raw
+numeric distance alone. The no-repair arm obtained a lower mean best fitness
+than the repair arm, 38129.27 versus 49777.84 (\tref{tab:repair-summary}), and
+the paired Wilcoxon signed-rank test reported a test statistic of 0.00 with
+$p = 1.86 \times 10^{-9}$ (\tref{tab:repair-wilcoxon}). This does not show that
+no-repair is a better TSP solver. Instead, it confirms the infeasibility
+pathology: when duplicate cities are allowed, the chromosome can skip some
+cities and still receive a short distance from the fitness function
+(\tref{tab:repair-sanity}, \tref{tab:repair-summary}). The repair arm reports
+higher distances because it evaluates genuine 100-city tours after constraint
+restoration (\tref{tab:repair-summary}).
+
+The main trade-off is between strict feasibility and exploratory freedom. Repair
+removes invalid chromosomes before evaluation, which protects selection pressure
+from artificially short infeasible tours (\tref{tab:repair-summary}). However,
+repair also edits offspring after crossover and mutation, so the relevant
+empirical question is whether that editing caused faster diversity collapse in
+the observed runs. In the TICKET-17 logs, both strategies lost most of their
+initial Hamming diversity by generation 500, but the repair arm retained
+slightly higher final diversity than no-repair (0.0128 versus 0.0100) and
+stayed higher at the generation-100 and generation-250 checkpoints
+(\tref{tab:repair-convergence}). This suggests that, for the random-insertion
+repair used here, feasibility enforcement did not cause faster diversity
+collapse than the no-repair baseline in this run (\tref{tab:repair-convergence}).
+
+Compared with alternative constraint-handling strategies, repair is most useful
+when the chosen operators can create invalid permutations. A feasibility-
+preserving crossover such as PMX, OX, or CX avoids this specific duplicate/missing
+city failure by construction, so the repair step would usually become a safeguard
+rather than the main constraint handler. By contrast, the no-repair baseline in
+TICKET-17 is equivalent to using no effective penalty for infeasibility: invalid
+chromosomes survive and are selected because their raw distances are shorter
+(\tref{tab:repair-summary}). A penalty-function alternative would need to assign
+enough cost to duplicate and missing cities to prevent this selection-pressure
+distortion; otherwise it would reproduce the same misleading advantage observed
+in the no-repair arm (\tref{tab:repair-sanity}, \tref{tab:repair-summary}).
+
+Overall, TICKET-17 supports the repair mechanism as a necessary constraint-
+handling component for naive crossover experiments. The statistical test shows
+that the two strategies behave differently, the sanity check shows why the
+difference occurs, and the convergence checkpoints show that repair preserves
+validity while maintaining slightly more final diversity than the invalid
+baseline in this experiment (\tref{tab:repair-sanity},
+\tref{tab:repair-summary}, \tref{tab:repair-convergence},
+\tref{tab:repair-wilcoxon}). The repair arm is therefore the meaningful basis
+for TSP performance discussion, while the no-repair arm is best interpreted as
+evidence of how infeasibility corrupts fitness-based selection.

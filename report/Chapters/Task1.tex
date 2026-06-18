@@ -100,7 +100,7 @@ This permutation structure is important for GA design. Crossover and mutation op
 
 The experiments will use \textbf{30 independent runs} for each configuration. Independent runs are necessary because GAs are stochastic algorithms: different random seeds can produce different initial populations, crossover outcomes, mutation events, and final tours. Thirty runs provide enough repeated observations to report mean, standard deviation, best result, and boxplot-based comparisons.
 
-Each run will terminate after a maximum of \textbf{1000 generations}, or earlier if the best-so-far tour length does not improve for \textbf{150 consecutive generations}. This combines a fixed computational budget with a convergence-based stopping rule, reducing wasted computation when the population has stagnated.
+Each run terminates after a fixed budget of \textbf{500 generations}. A fixed termination criterion was chosen over convergence-based early stopping to ensure that all runs produce the same number of per-generation data points, simplifying downstream convergence curve comparisons and statistical analysis.
 
 The parameter sensitivity analysis will sweep the following ranges:
 \[

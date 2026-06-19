@@ -35,8 +35,9 @@ made optional in the GA loop: large experiment grids can become expensive.
 
 ## Relationship To Existing Notebooks
 
-- `notebooks/14_diversity_metrics.ipynb`: Supports edge diversity as a
-  meaningful TSP-specific metric.
+- `notebooks/14_diversity_metrics.ipynb`: The paper's emphasis on edge
+  structure points toward edge-based diversity as a useful future extension;
+  the project currently tracks Hamming diversity only.
 - `notebooks/16_parameter_sweep.ipynb`: Supports concern about computational
   cost in repeated runs.
 - `notebooks/20_tour_visualization.ipynb`: Edge-based interpretation can help

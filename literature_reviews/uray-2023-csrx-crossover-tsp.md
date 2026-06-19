@@ -27,8 +27,10 @@ chromosome into a valid tour, but repair does not guarantee that high-quality
 edge or order structure is preserved. This helps frame the critical analysis of
 repair in TICKET-21 and Task 3.3.
 
-The paper also supports the use of edge diversity, because symmetric TSP quality
-is tied to adjacent-city relationships rather than absolute chromosome positions.
+The paper's discussion of symmetric TSP quality being tied to adjacent-city
+relationships motivates edge-based diversity as a stronger TSP-specific metric.
+This project tracks Hamming diversity only; edge-based diversity is a natural
+extension for future work but is out of scope here.
 
 ## Relationship To Existing Notebooks
 
@@ -36,8 +38,9 @@ is tied to adjacent-city relationships rather than absolute chromosome positions
   special handling.
 - `notebooks/12_repair_mechanism.ipynb`: Helps critique repair as feasibility
   restoration rather than quality preservation.
-- `notebooks/14_diversity_metrics.ipynb`: Supports edge-based population
-  analysis.
+- `notebooks/14_diversity_metrics.ipynb`: The project tracks Hamming
+  diversity; the paper's edge-structure framing motivates edge-based
+  diversity as a useful extension for future work.
 
 ## Limits
 

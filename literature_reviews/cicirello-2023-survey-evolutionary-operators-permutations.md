@@ -32,16 +32,18 @@ preserve:
 - Edge information is especially relevant to TSP because tour length is computed
 from adjacent city pairs.
 
-This also helps explain why the project logs edge diversity in addition to
-Hamming diversity. Hamming diversity measures positional difference, while edge
-diversity is closer to TSP structure.
+This taxonomy supports the project's choice to track Hamming diversity, which
+measures positional difference across the population. The paper also points to
+edge-based diversity as a more TSP-specific alternative, which is a natural
+direction for future work but is out of scope for this project.
 
 ## Relationship To Existing Notebooks
 
 - `notebooks/08_crossover.ipynb`: Supports the PMX/OX/CX operator discussion.
 - `notebooks/09_mutation.ipynb`: Supports permutation-specific mutation.
-- `notebooks/14_diversity_metrics.ipynb`: Strongly supports the use of both
-  Hamming and edge-based diversity metrics.
+- `notebooks/14_diversity_metrics.ipynb`: Supports the use of Hamming diversity
+  as a population-level metric; the paper's discussion of edge-based diversity
+  is noted but not implemented in this project.
 - `notebooks/18_convergence_plots.ipynb`: Useful for interpreting diversity
   trends.
 
@@ -55,5 +57,6 @@ our repair mechanism. Its value is conceptual and taxonomic.
 
 Cite prominently in `LiteratureReview.tex` under "Genetic Algorithms for the
 TSP" and "Repair Mechanisms in Permutation-based EAs". Also cite in `Task2.tex`
-or `Task3.tex` when motivating edge diversity.
+when motivating the choice between permutation-aware operators (PMX/OX/CX) and
+the naive crossover used as the primary operator with repair.
 

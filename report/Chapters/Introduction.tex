@@ -8,118 +8,101 @@
 
 The Traveling Salesman Problem (TSP) asks for the shortest closed tour that
 visits every city in a given set exactly once before returning to the
-starting city.  Despite its deceptively simple statement, the TSP is
+starting city. Although the statement is short, the TSP is
 NP-hard~\cite{applegate2006traveling}, and its search space grows
-factorially with the number of cities, rendering exhaustive enumeration
-infeasible for all but the smallest instances.  As a result, the TSP has
-become one of the most widely studied benchmarks in combinatorial
-optimisation and a standard testbed for metaheuristic algorithms.
-
-Among metaheuristics, Genetic Algorithms (GAs) are particularly appealing
-for the TSP because they maintain a population of candidate solutions and
-leverage recombination to explore large regions of the search space
-simultaneously~\cite{holland1975adaptation}.  However, applying GAs to
-permutation problems introduces a fundamental challenge: conventional
-crossover and mutation operators designed for binary or real-valued
-representations do not inherently preserve the permutation property.  When
-two valid parent tours are recombined, the resulting offspring often contains
-duplicate cities and missing cities, producing an \emph{infeasible} solution
-whose fitness value is meaningless.
-
-This project investigates how such infeasible solutions arise, designs a
-repair mechanism to restore feasibility, and critically analyses the impact
-of repair on solution quality, population diversity, and convergence
-behaviour.
+factorially with the number of cities, so exhaustive enumeration is
+impractical for all but the smallest instances. The TSP has therefore
+become a standard testbed for combinatorial metaheuristics, and Genetic
+Algorithms (GAs) are a frequently studied
+choice~\cite{holland1975adaptation,goldberg1989genetic}. This project
+implements a GA for the static single-objective TSP, with explicit
+attention to how constraint violations are detected and corrected during
+the search.
 
 \subsection{Background}
 \label{Intro:Background}
 
-The TSP was first formalised as a mathematical problem in the 1930s and has
-since motivated advances in integer programming, branch-and-bound
-algorithms, and approximation theory~\cite{applegate2006traveling}.  In the
-evolutionary computation community, the TSP serves as a canonical benchmark
-because it combines a simple objective (minimise total tour distance) with a
-rich constraint structure (each city visited exactly once, forming a
-Hamiltonian cycle).
-
-Genetic Algorithms, introduced by Holland~\cite{holland1975adaptation} and
-popularised for combinatorial problems by Goldberg~\cite{goldberg1989genetic},
-evolve a population of solutions through selection, crossover, and mutation.
-For the TSP, solutions are typically encoded as permutations of the city
-indices.  Specialised crossover operators --- such as Partially Mapped
+A tour in the TSP is a permutation of the city indices, and a permutation
+is feasible only when every city appears exactly once. This requirement
+makes operator design unusually consequential: ordinary string-crossover
+operators borrowed from binary or real-valued GAs do not preserve the
+permutation property, and they routinely produce offspring that contain
+duplicated cities and miss other cities. Specialised crossover operators
+have been developed precisely for this reason, including Partially Mapped
 Crossover (PMX)~\cite{goldberg1985alleles}, Order Crossover
 (OX)~\cite{davis1985applying}, and Cycle Crossover
-(CX)~\cite{oliver1987study} --- have been developed to respect the
-permutation structure.  Nevertheless, simpler or general-purpose operators
-can still produce offspring that violate the ``each city exactly once''
-constraint, necessitating some form of constraint handling.
+(CX)~\cite{oliver1987study}. When such operators are not used, the GA
+must instead handle infeasibility either by penalising it in the fitness
+function or by repairing offspring before they are evaluated.
+
+The benchmark instance for this project is kroA100 from
+TSPLIB~\cite{reinelt1991tsplib}: 100 cities in the Euclidean plane with
+a known optimal tour length of 21\,282. Its size is large enough to
+expose differences between constraint-handling strategies, but small
+enough that thirty-seed comparisons and parameter sweeps remain
+computationally tractable.
 
 \subsection{Problem Statement}
 \label{Intro:ProblemStatement}
 
-When a GA for the TSP employs crossover operators that do not inherently
-preserve feasibility (e.g.\ single-point crossover), the resulting offspring
-will typically contain duplicate cities at some positions and miss other
-cities entirely.  If these infeasible chromosomes are evaluated directly,
-their tour-length fitness values are computed over an incomplete or redundant
-subset of cities, producing artificially low distances that do not
-correspond to any valid tour.  Because selection favours lower fitness
-values, infeasible solutions can dominate the population, distorting
-selection pressure and steering the evolutionary search away from the
-feasible region.
+When a GA for the TSP uses a crossover operator that does not preserve
+permutations --- single-point crossover being the simplest example ---
+offspring will typically contain duplicated cities at some positions and
+omit other cities entirely. Computing tour length over such a chromosome
+yields a distance that does not correspond to any valid tour, and the
+value is often artificially low because the missing cities never
+contribute to the sum. Selection then favours these infeasible
+chromosomes, distorting the search and pulling the population away from
+the feasible region.
 
-Three broad strategies exist for handling this infeasibility:
-\begin{enumerate}[nosep]
-    \item \textbf{Feasibility-preserving operators:} design crossover and
-          mutation operators that never produce infeasible offspring (e.g.\
-          PMX, OX, CX).
-    \item \textbf{Penalty functions:} add a penalty term to the fitness of
-          infeasible solutions proportional to the degree of constraint
-          violation.
-    \item \textbf{Repair mechanisms:} detect and correct constraint
-          violations in offspring before fitness evaluation.
-\end{enumerate}
-
-This project focuses on the third approach --- repair mechanisms --- while
-using the other two as baselines for comparative analysis.  The central
-research question is: \emph{How does a repair mechanism affect the quality,
-diversity, and convergence of a GA applied to the TSP, compared to
-alternative constraint-handling strategies?}
+Three constraint-handling strategies address this pathology. Feasibility
+can be preserved by construction with permutation-aware operators such
+as PMX. Infeasibility can be tolerated but discouraged through a
+penalty term proportional to the violation. Infeasibility can also be
+removed after recombination by a repair step that detects duplicates
+and missing cities and rewrites the chromosome into a valid permutation.
+The central question of this project is how these three strategies
+compare on a fixed benchmark when the rest of the GA is held constant.
 
 \subsection{Contributions}
 \label{Intro:Contributions}
 
-The contributions of this report are as follows:
-\begin{enumerate}[nosep]
-    \item A complete GA implementation for the TSP with permutation
-          encoding, multiple selection, crossover, and mutation operators,
-          and a configurable repair mechanism supporting three insertion
-          strategies (random, positional, nearest-neighbour).
-    \item An empirical demonstration of the infeasibility pathology: using
-          naive crossover without repair, we show that the GA converges to
-          statistically significant but \emph{invalid} fitness values
-          ($p < 0.001$, Wilcoxon signed-rank test, 30 independent runs on
-          kroA100).
-    \item A parameter sensitivity analysis investigating the interaction
-          between GA configuration and repair effectiveness.
-    \item A comparative evaluation of repair versus alternative
-          constraint-handling approaches, with convergence curves, diversity
-          tracking, and statistical significance testing.
-\end{enumerate}
+This report makes four contributions. First, it implements a complete
+GA pipeline for the TSP using permutation encoding, tournament selection
+($k=3$), swap mutation, and elitism with two preserved individuals; the
+primary configuration pairs naive single-point crossover with a
+random-insertion repair operator that is invoked on every offspring of
+every generation, so repair is load-bearing rather than incidental.
+Second, it conducts a three-arm comparison on kroA100 over 30
+independent seeds, contrasting repair against a penalty function with
+weight 50\,000 and against PMX as a feasibility-preserving operator;
+the mean tour lengths are 49\,778 for repair, 50\,655 for PMX, and
+57\,948 for the penalty function, indicating that direct feasibility
+enforcement via repair matches or slightly outperforms a
+feasibility-preserving operator on this benchmark and clearly
+outperforms a penalty-based alternative. Third, it executes a
+1\,620-run parameter sensitivity sweep over population size, crossover
+rate, mutation rate, and selection method, identifying a best
+configuration of population 200, crossover rate 0.95, mutation rate
+0.1, and tournament selection, with mean tour length 49\,347 and an
+optimality gap of 131.9\,\%. Fourth, it reports the best tour found
+across the study (length 42\,623, gap 100.3\,\%) and provides
+convergence and diversity visualisations that support a critical
+discussion of where the GA succeeds and where it leaves quality on the
+table.
 
 \subsection{Report Outline}
 \label{Intro:Outline}
 
 The remainder of this report is organised as follows.
-Section~\ref{SecLiteratureReview} reviews related work on Genetic Algorithms
-and constraint handling for the TSP.
-Section~\ref{Task1} defines the problem formally and describes the
-experimental setup, including the benchmark instance and parameter ranges.
-Section~\ref{Task2} presents the GA design and the repair mechanism
-implementation.
-Section~\ref{Task3} reports the parameter sensitivity analysis,
-performance evaluation, and critical analysis of the repair mechanism.
-Section~\ref{Task4} provides visualisations of convergence behaviour and
-solution quality.
-Section~\ref{SecConclusion} concludes the report and discusses directions
-for future research.
+Section~\ref{SecLiteratureReview} surveys related work on Genetic
+Algorithms for the TSP and on constraint handling in evolutionary
+computation. Section~\ref{Task1} formalises the problem and describes
+the experimental design, including the benchmark instance, parameter
+ranges, and seed protocol. Section~\ref{Task2} presents the GA
+implementation and the repair mechanism in detail. Section~\ref{Task3}
+reports the parameter sweep, the three-arm comparison, and the critical
+analysis of strengths and limitations. Section~\ref{Task4} provides the
+visualisations of convergence, diversity, and tour geometry.
+Section~\ref{SecConclusion} concludes and identifies directions for
+future work.

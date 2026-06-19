@@ -49,9 +49,9 @@ explicit by classifying permutation operators according to the features they
 transmit, including absolute positions, undirected edges, directed edges,
 precedences, and cyclic precedences~\cite{cicirello2023permutationoperators}.
 This is directly relevant to the present project because TSP tour length is
-computed from adjacent city pairs. Positional diversity alone is therefore
-insufficient to describe the search; edge overlap and edge diversity provide
-a more problem-specific view of population structure.
+computed from adjacent city pairs. Positional diversity captured by Hamming
+distance describes how the population spreads across the city-position
+space, which is the diversity signal this project tracks across runs.
 
 State-of-the-art GA variants for the TSP often go beyond a plain
 generational GA. Liu uses edge swapping and local search to obtain strong
@@ -128,8 +128,7 @@ disturb useful edges. Positional insertion may retain more chromosome
 structure but reinforce parent-position bias. Nearest-neighbour insertion
 may improve local tour quality but also accelerate convergence toward a
 narrower set of edges. These trade-offs motivate the project's explicit
-tracking of best fitness, mean fitness, Hamming diversity, edge overlap, and
-edge diversity.
+tracking of best fitness, mean fitness, and Hamming diversity across runs.
 
 The critical point for this project is that feasibility and quality are
 different properties. A repaired chromosome is valid, but it is not

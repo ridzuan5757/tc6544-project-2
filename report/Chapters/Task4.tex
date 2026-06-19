@@ -9,16 +9,171 @@
 
 \subsection{Convergence Curves (Task 4.1)}
 \label{T4:Convergence}
-TODO: Present convergence curves over generations for the chosen configurations (best-so-far vs.\ population mean).
+
+\fref{fig:conv-strategy} shows the mean best-fitness convergence curves
+($\pm$~1 standard deviation) across 30 seeds for each constraint-handling
+strategy from the three-arm comparative experiment. All three strategies
+start from the same initial fitness level ($\approx$~151,000) because the
+initial populations are generated identically before the first crossover
+step.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../results/figures/convergence_best_fitness.pdf}
+    \caption{Convergence of best fitness per strategy (naive crossover, 30 seeds). Repair produces valid tours with higher but meaningful fitness. No-repair converges to lower but infeasible values. Penalty is highest because the penalty weight inflates reported fitness.}
+    \label{fig:conv-strategy}
+\end{figure}
+
+The no-repair arm descends the fastest and reaches the lowest final values,
+but these values represent infeasible tours that skip cities. The repair arm
+converges more slowly to higher values, but every evaluated chromosome is a
+valid 100-city tour. The penalty arm converges slowest and plateaus highest
+because the penalty weight ($w = 50{,}000$) adds substantial cost to
+infeasible chromosomes, forcing the GA to earn feasibility through selection
+pressure alone.
+
+\fref{fig:conv-combined} presents a combined three-panel view of best
+fitness, mean population fitness, and population diversity over generations.
+The diversity panel shows that all three strategies experience rapid
+diversity loss in the first 50--100 generations, with the repair arm
+retaining slightly higher final diversity (0.013 versus 0.010 for no-repair).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{../results/figures/convergence_combined.pdf}
+    \caption{Combined convergence view: best fitness (left), mean fitness (centre), and population diversity (right) for all three strategies.}
+    \label{fig:conv-combined}
+\end{figure}
 
 \subsection{Solution-Quality Distribution Across Runs}
 \label{T4:Boxplots}
-TODO: Boxplots of final tour length across independent runs, broken down by configuration.
 
-\subsection{Best-Tour Visualisation (Optional)}
+\fref{fig:boxplot-strategy} shows the distribution of final tour lengths
+across 30 runs for each constraint-handling strategy.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../results/figures/boxplot_strategy.pdf}
+    \caption{Boxplots of final tour length by constraint-handling strategy (kroA100, naive crossover, 30 runs per strategy).}
+    \label{fig:boxplot-strategy}
+\end{figure}
+
+The three strategies are clearly separated. No-repair (mean 38,129) produces
+the lowest recorded distances but these are not valid TSP solutions. Repair
+(mean 49,778) produces meaningful tour lengths with the tightest
+interquartile range of the three strategies. Penalty (mean 57,948) produces
+the highest values because the penalty weight inflates fitness for
+chromosomes that still contain violations.
+
+Pairwise Wilcoxon signed-rank tests with Bonferroni correction
+($\alpha_{\text{corrected}} = 0.0167$ for three comparisons) confirm that
+all three pairwise differences are statistically significant
+($p < 0.001$ for all pairs). \tref{tab:wilcoxon-strategy} summarises these
+results.
+
+\begin{table}[h]
+    \centering
+    \caption{Pairwise Wilcoxon signed-rank tests (Bonferroni-corrected $\alpha = 0.0167$). All differences are statistically significant.}
+    \label{tab:wilcoxon-strategy}
+    \begin{tabular}{l l r r l}
+        \hline
+        Strategy 1 & Strategy 2 & Statistic & $p$-value & Lower mean \\
+        \hline
+        Repair & Penalty & 1.00 & $< 0.001$ & Repair \\
+        Repair & No repair & 0.00 & $< 0.001$ & No repair \\
+        Penalty & No repair & 0.00 & $< 0.001$ & No repair \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The repair vs.\ penalty comparison is the most informative: repair
+significantly outperforms penalty ($p < 0.001$), confirming that direct
+feasibility enforcement is more effective than indirect penalty-based
+steering for this problem instance and operator configuration.
+
+\subsection{Best-Tour Visualisation}
 \label{T4:BestTour}
-TODO (optional per brief): 2D plot of the best tour found, with edge ordering highlighted.
+
+\fref{fig:best-tour} shows the best tour found across all 30 seeds of the
+best sweep configuration (pop\_size~$=$~200, $r_c$~$=$~0.95,
+$r_m$~$=$~0.10, tournament, PMX with repair). The tour visits all 100
+cities exactly once and returns to the starting city.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/best_tour.pdf}
+    \caption{Best tour found on kroA100 (tour length 37,956). Cities are plotted at their EUC\_2D coordinates with edges in visit order.}
+    \label{fig:best-tour}
+\end{figure}
+
+The tour exhibits the expected structure for a near-optimal Euclidean TSP
+solution: edges are predominantly short and the tour avoids large crossings,
+though several crossing edges remain, indicating room for improvement via
+local search operators such as 2-opt.
 
 \subsection{Results Discussion}
 \label{T4:Discussion}
-TODO: Interpretation of the visualisations and tie-back to the research questions and to \sref{T3:RepairCritique}.
+
+The experimental results address the central research question posed in
+\sref{Intro:ProblemStatement}: \emph{How does a repair mechanism affect
+the quality, diversity, and convergence of a GA applied to the TSP,
+compared to alternative constraint-handling strategies?}
+
+\textbf{On solution quality.}
+The repair mechanism produces valid tours whose fitness values are
+meaningful and comparable. Without repair, the GA converges to solutions
+with statistically lower fitness values (\tref{tab:repair-summary},
+\tref{tab:wilcoxon-strategy}), but these are not valid tours --- they
+visit fewer than 100 unique cities (\tref{tab:repair-sanity}). The penalty
+function keeps chromosomes in the population but steers toward feasibility
+indirectly, resulting in higher tour lengths than repair
+(\fref{fig:boxplot-strategy}). Among the three strategies, repair is the
+only one that guarantees every evaluated solution is a valid TSP tour while
+also producing the lowest meaningful fitness values.
+
+\textbf{On population diversity.}
+Both repair and no-repair arms experience rapid diversity collapse in the
+first 50--100 generations (\fref{fig:conv-combined}). However, repair
+retains slightly higher final diversity (0.013 vs.\ 0.010) than no-repair
+(\tref{tab:repair-convergence}). This is consistent with the random-insertion
+repair strategy, which introduces stochastic variation at repaired positions.
+The concern raised in the literature that repair might accelerate diversity
+loss~\cite{padhye2015feasibilitypreserving} was not observed in this
+experiment.
+
+\textbf{On convergence behaviour.}
+Repair produces a convergence curve that is initially slower than no-repair
+but reaches a meaningful plateau (\fref{fig:conv-strategy}). The no-repair
+arm's faster descent is misleading because it reflects convergence toward
+infeasible solutions. The penalty arm converges slowest because the fitness
+landscape is distorted by the additive penalty term.
+
+\textbf{On parameter sensitivity.}
+The parameter sweep (\sref{T3:Sensitivity}) shows that selection method
+has the largest single-parameter effect on solution quality
+(\fref{fig:boxplot-selection}), followed by mutation rate
+(\fref{fig:boxplot-mutation}) and population size (\fref{fig:boxplot-pop}).
+The best configuration (tournament, $r_m = 0.10$, pop\_size~$=$~200)
+achieved a gap of 123.4\% from the optimal, while the worst (roulette,
+$r_m = 0.05$, pop\_size~$=$~200) reached 402.4\%. This demonstrates that
+GA parameter choice has a larger effect on solution quality than the gap
+between the best GA result and the known optimal.
+
+\textbf{Limitations of the current GA.}
+The best single run (tour length 37,956) is still 78.4\% above the known
+optimal of 21,282. This gap is expected for a plain generational GA without
+local search. State-of-the-art TSP solvers combine evolutionary operators
+with 2-opt or Lin--Kernighan local search~\cite{liu2014powerfulga}, which
+can close much of this gap. The purpose of this project was not to match
+optimal solutions but to investigate constraint-handling strategies, and the
+results clearly demonstrate the qualitative differences between repair,
+penalty, and no-repair approaches.
+
+\textbf{Connection to repair mechanism analysis.}
+The findings in this section are consistent with the critical analysis in
+\sref{T3:RepairCritique}. The repair mechanism is necessary when using
+operators that break the permutation property, effective at maintaining
+feasibility without accelerating diversity loss, and preferable to the
+penalty-function alternative tested. For permutation-preserving operators
+(PMX, OX, CX), repair serves as a safety net rather than the primary
+constraint handler.

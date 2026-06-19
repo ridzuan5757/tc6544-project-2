@@ -8,22 +8,162 @@
 
 \subsection{Parameter Sensitivity Analysis (Task 3.1)}
 \label{T3:Sensitivity}
-TODO: Investigate how GA parameters influence performance. Report configurations that deliver:
-\begin{itemize}
-    \item robust performance;
-    \item reasonable computational cost;
-    \item consistency across multiple runs.
-\end{itemize}
+
+A full-factorial parameter sweep was conducted on kroA100 using PMX crossover
+with repair enabled. The swept parameters and their levels are:
+population size $\in \{50, 100, 200\}$,
+crossover rate $\in \{0.70, 0.85, 0.95\}$,
+mutation rate $\in \{0.01, 0.05, 0.10\}$,
+and selection method $\in \{\text{tournament}, \text{roulette}\}$.
+This yields $3 \times 3 \times 3 \times 2 = 54$ unique configurations, each
+executed for 30 independent seeds (1,620 total runs of 500 generations each).
+
+\tref{tab:sweep-top} reports the five best and five worst configurations
+ranked by mean best fitness over 30 seeds.
+
+\begin{table}[h]
+    \centering
+    \caption{Top-5 and bottom-5 configurations from the parameter sweep, ranked by mean best fitness (lower is better). Gap is relative to the known optimal tour length of 21,282.}
+    \label{tab:sweep-top}
+    \begin{tabular}{r r r l r r r}
+        \hline
+        Pop.\ size & $r_c$ & $r_m$ & Selection & Mean best & Std. & Gap \\
+        \hline
+        200 & 0.95 & 0.10 & tournament & 47,539 & 3,455 & 123.4\% \\
+        200 & 0.85 & 0.10 & tournament & 48,649 & 3,718 & 128.6\% \\
+        200 & 0.70 & 0.10 & tournament & 49,179 & 3,342 & 131.1\% \\
+        200 & 0.95 & 0.05 & tournament & 52,959 & 3,672 & 148.8\% \\
+        200 & 0.85 & 0.05 & tournament & 53,617 & 3,310 & 151.9\% \\
+        \hline
+        200 & 0.85 & 0.05 & roulette & 101,085 & 5,998 & 375.0\% \\
+        200 & 0.85 & 0.01 & roulette & 101,393 & 6,604 & 376.4\% \\
+        200 & 0.95 & 0.01 & roulette & 104,816 & 5,335 & 392.5\% \\
+        200 & 0.95 & 0.10 & roulette & 105,085 & 5,718 & 393.8\% \\
+        200 & 0.95 & 0.05 & roulette & 106,911 & 4,928 & 402.4\% \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Three patterns emerge from \tref{tab:sweep-top} and the per-parameter
+boxplots in \fref{fig:boxplot-pop}--\fref{fig:boxplot-selection}.
+
+\textbf{Selection method} is the dominant factor.
+Tournament selection (median 63,674) substantially outperforms roulette
+wheel selection (median 89,059). All five best configurations use
+tournament, and all five worst use roulette. Tournament's deterministic
+best-of-$k$ rule creates stronger selection pressure than roulette's
+proportional sampling, driving faster convergence toward shorter tours
+on this problem instance.
+
+\textbf{Mutation rate} is the second-largest effect.
+Among the three levels tested, $r_m = 0.10$ produces the lowest median
+(71,606), followed by $r_m = 0.05$ (76,747) and $r_m = 0.01$ (90,322).
+The lowest rate likely causes premature convergence because swap mutation
+at $r_m = 0.01$ perturbs the population too infrequently to escape local
+optima within 500 generations.
+
+\textbf{Population size} has a consistent but comparatively small effect.
+Larger populations produce lower median tour lengths (200~$\to$~78,366;
+100~$\to$~80,377; 50~$\to$~81,744), but the gap between the three levels
+is modest compared to the within-group variance. In
+\tref{tab:sweep-top}, all five best configurations use pop\_size~$=$~200,
+suggesting that the additional diversity from larger populations
+compounds with other favourable settings.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_pop_size.pdf}
+    \caption{Distribution of final tour length by population size (PMX, repair enabled, 30 seeds per configuration).}
+    \label{fig:boxplot-pop}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_mutation_rate.pdf}
+    \caption{Distribution of final tour length by mutation rate.}
+    \label{fig:boxplot-mutation}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_selection_method.pdf}
+    \caption{Distribution of final tour length by selection method.}
+    \label{fig:boxplot-selection}
+\end{figure}
+
+Crossover rate ($r_c$) has the smallest effect among the four parameters.
+The convergence curves in \fref{fig:conv-pop}--\fref{fig:conv-selection}
+further confirm that tournament selection and higher mutation rates
+produce steeper initial convergence and lower final plateaus, while
+population size shifts the entire curve downward without changing its
+shape.
 
 \subsection{Performance Evaluation (Task 3.2)}
 \label{T3:Performance}
-TODO: Evaluate the GA on:
-\begin{itemize}
-    \item solution quality (tour length);
-    \item convergence rate;
-    \item stability across trials;
-    \item computational efficiency.
-\end{itemize}
+
+The best configuration identified in the sweep
+(pop\_size~$=$~200, $r_c$~$=$~0.95, $r_m$~$=$~0.10, tournament selection)
+achieved a mean best fitness of 47,539 with a standard deviation of
+3,455 across 30 seeds. The best single run reached 37,956, a gap of
+78.4\% from the known optimal of 21,282. The worst configuration
+(pop\_size~$=$~200, $r_c$~$=$~0.95, $r_m$~$=$~0.05, roulette) reached a
+mean of 106,911, a gap of 402.4\%.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/convergence_best_vs_worst.pdf}
+    \caption{Convergence comparison between the best and worst configurations from the parameter sweep.}
+    \label{fig:conv-best-worst}
+\end{figure}
+
+\fref{fig:conv-best-worst} shows the convergence curves for the best and
+worst configurations. The best configuration converges steeply for the
+first 100 generations and continues improving at a slower rate until
+generation 500. The worst configuration shows minimal improvement after
+the initial generations, consistent with weak selection pressure from
+roulette combined with insufficient mutation to escape local optima.
+
+\textbf{Convergence rate.} \fref{fig:conv-pop}--\fref{fig:conv-selection}
+show convergence curves grouped by each parameter. Tournament selection
+configurations reach lower fitness values by generation 100 than roulette
+reaches by generation 500. Higher mutation rates produce steeper descent
+in the first 50 generations. Larger populations show a modest downward
+shift across all generations.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/convergence_by_pop_size.pdf}
+    \caption{Convergence by population size (mean $\pm$ 1 std over 30 seeds).}
+    \label{fig:conv-pop}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/convergence_by_mutation_rate.pdf}
+    \caption{Convergence by mutation rate.}
+    \label{fig:conv-mutation}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../results/figures/convergence_by_selection.pdf}
+    \caption{Convergence by selection method.}
+    \label{fig:conv-selection}
+\end{figure}
+
+\textbf{Stability across trials.} The standard deviation in \tref{tab:sweep-top}
+ranges from 3,310 to 6,604. Tournament configurations are more consistent
+(std $\approx$ 3,300--3,700) than roulette configurations (std $\approx$
+4,900--6,600), indicating that stronger selection pressure reduces
+run-to-run variability.
+
+\textbf{Computational efficiency.} All runs used a fixed budget of 500
+generations. The wall-clock time per run scales linearly with population
+size (approximately 0.2s for pop\_size~$=$~50, 0.4s for 100, and 0.8s for
+200 on the test machine). The improvement from pop\_size~$=$~100 to 200 is
+small relative to the doubling in runtime, suggesting that pop\_size~$=$~100
+or 200 with tournament selection offers the best quality-cost trade-off for
+this instance.
 
 \subsection{Critical Analysis of Repair Mechanism (Task 3.3)}
 \label{T3:RepairCritique}

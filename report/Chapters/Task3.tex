@@ -121,13 +121,12 @@ offspring, which is small relative to the $O(n)$ fitness evaluation.
 \section{Critical Analysis of Repair Mechanism (Task 3.3)}
 \label{T3:RepairCritique}
 
-We compared three constraint-handling strategies using the three-arm
-experiment from TICKET-17. All three arms share the same GA
-hyperparameters --- population size 100, crossover rate 0.8, mutation
-rate 0.2, tournament selection, swap mutation, 500 generations, 30 seeds
---- so the only thing that differs is how we enforce the feasibility
-constraint (each chromosome must be a Hamiltonian permutation of 100
-cities).
+We compared three constraint-handling strategies in a three-arm
+experiment. All three arms share the same GA
+hyperparameters (population size 100, crossover rate 0.8, mutation
+rate 0.2, tournament selection, swap mutation, 500 generations, 30 seeds),
+so the only thing that differs is how we enforce the feasibility
+constraint.
 
 The three strategies are:
 \begin{itemize}
@@ -153,7 +152,7 @@ over 30 seeds for each strategy, and the distributional view is given in
 
 \begin{table}[htbp]
     \centering
-    \caption{Final best-fitness summary over 30 seeds per strategy from the TICKET-17 three-arm comparison. All arms share pop=100, $r_c$=0.8, $r_m$=0.2, tournament selection, 500 generations. Gap is relative to the optimum 21,282.}
+    \caption{Final best-fitness summary over 30 seeds per strategy from the three-arm comparison. All arms share pop=100, $r_c$=0.8, $r_m$=0.2, tournament selection, 500 generations. Gap is relative to the optimum 21,282.}
     \label{tab:repair-summary}
     \begin{tabular}{l r r r r r r r}
         \hline

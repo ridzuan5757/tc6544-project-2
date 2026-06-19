@@ -45,7 +45,7 @@ For \texttt{EUC\_2D} instances, each city $i$ has coordinates $(x_i, y_i)$ and
 the inter-city distance follows the TSPLIB convention of nearest-integer
 rounding,
 \[
-d(i,j) = \left\lfloor \sqrt{(x_i - x_j)^2 + (y_i - y_j)^2} + 0.5 \right\rfloor,
+d(i,j) = \left\lfloor \sqrt{(x_i - x_j)^2 + (y_i - y_j)^2} + 0.5 \right\rfloor
 \]
 so that $d(i,j) = d(j,i)$. We use the same rounded distance for fitness
 evaluation and for comparison against the published optimum.
@@ -81,12 +81,12 @@ is automatically a Hamiltonian cycle, so feasibility reduces to maintaining
 the permutation property under the GA operators.
 
 The search space is discrete and finite. Once we quotient out rotational and
-reflective symmetries, its cardinality is $n!/(2n)$, which for $n=100$ is
+reflective symmetries, its cardinality is $\dfrac{n!}{2n}$, which for $n=100$ is
 approximately $4.7 \times 10^{155}$. This factorial growth rules out exact
 search and motivates a population-based metaheuristic such as a Genetic
 Algorithm~\cite{holland1975adaptation,goldberg1989genetic}. The fitness
-landscape is non-convex and multimodal --- many tours share similar lengths
-but differ structurally in the edges they use --- which is where recombination
+landscape is non-convex and multimodal: many tours share similar lengths
+but differ structurally in the edges they use, which is where recombination
 of partial tours can outperform single-point local search. The permutation
 constraint also dictates the operator design. Classical string-style crossover
 and bit-flip mutation do not preserve the permutation property, so we must
@@ -116,14 +116,14 @@ tests directly comparable.
 
 The parameter sweep covers four GA factors, giving
 $3 \times 3 \times 3 \times 2 = 54$ unique configurations:
-\[
-\text{pop\_size} \in \{50, 100, 200\}, \qquad
-p_c \in \{0.70, 0.85, 0.95\},
-\]
-\[
-p_m \in \{0.01, 0.05, 0.10\}, \qquad
-\text{selection} \in \{\text{tournament},\, \text{roulette}\}.
-\]
+
+\begin{align*}
+	\text{pop\_size} &\in \{50, 100, 200\} \\
+	p_c &\in \{0.70, 0.85, 0.95\} \\
+	p_m &\in \{0.01, 0.05, 0.10\} \\
+	\text{selection} &\in \{\text{tournament},\, \text{roulette}\}
+\end{align*}
+
 Population size brackets the moderate range typical in GA-TSP studies on
 TSPLIB-scale instances. Crossover and mutation rates span the
 low/medium/high settings from the empirical reviews of Larra{\~n}aga et

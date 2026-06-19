@@ -31,7 +31,7 @@ others. Specialised operators have been developed for exactly this reason,
 including Partially Mapped Crossover (PMX)~\cite{goldberg1985alleles},
 Order Crossover (OX)~\cite{davis1985applying}, and Cycle Crossover
 (CX)~\cite{oliver1987study}. When such operators are not used, the GA
-must handle infeasibility some other way --- either by penalising it in
+must handle infeasibility some other way, either by penalising it in
 the fitness function or by repairing offspring before evaluation.
 
 We use kroA100 from TSPLIB~\cite{reinelt1991tsplib} as our benchmark:
@@ -44,7 +44,7 @@ comparisons and parameter sweeps stay computationally tractable.
 \label{Intro:ProblemStatement}
 
 When a GA for the TSP uses a crossover operator that does not preserve
-permutations --- single-point crossover being the simplest case ---
+permutations (single-point crossover being the simplest case)
 offspring will typically contain duplicated cities at some positions and
 omit other cities entirely. Computing tour length on such a chromosome
 gives a distance that does not correspond to any valid tour. Worse, the

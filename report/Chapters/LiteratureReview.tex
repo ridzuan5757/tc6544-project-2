@@ -22,8 +22,8 @@ permutation constraint and what happens when infeasible offspring appear.
 
 The standard representation encodes a tour as a permutation of city
 indices. A chromosome is feasible only when every city appears exactly
-once. Larra{\~n}aga et al. survey several encodings---path, adjacency,
-ordinal, matrix---and the operators designed for
+once. Larra{\~n}aga et al. survey several encodings (path, adjacency,
+ordinal, matrix) and the operators designed for
 them~\cite{larranaga1999genetic}. Later reviews identify crossover design,
 mutation design, local search hybridisation, and diversity preservation as
 the recurring themes in GA-TSP
@@ -37,8 +37,8 @@ inheritance~\cite{goldberg1985alleles,davis1985applying,oliver1987study}.
 Cicirello classifies permutation operators by what they transmit: absolute
 positions, undirected edges, directed edges, precedences, or cyclic
 precedences~\cite{cicirello2023permutationoperators}. Since TSP tour length
-depends on adjacent city pairs, positional diversity---measured by Hamming
-distance---captures how the population spreads across the city-position
+depends on adjacent city pairs, positional diversity (measured by Hamming
+distance) captures how the population spreads across the city-position
 space.
 
 State-of-the-art GA variants go well beyond a plain generational loop. Liu
@@ -58,7 +58,7 @@ algorithms: penalty functions, specialised representations, repair methods,
 and feasibility-based selection~\cite{coello2002constraint}. Michalewicz and
 Schoenauer argue that constraints are part of the problem structure, not an
 implementation afterthought~\cite{michalewicz1996evolutionary}. For the TSP,
-the ``visit every city exactly once'' condition is not a side constraint---it
+the ``visit every city exactly once'' condition is not a side constraint; it
 defines what makes a chromosome a valid tour.
 
 Penalty functions leave infeasible solutions in the population but add a
@@ -92,7 +92,7 @@ chromosome structure but reinforces parent bias. Nearest-neighbour insertion
 improves local quality but narrows convergence.
 
 Feasibility and quality are different properties. A repaired chromosome is
-valid but not necessarily a good tour---the repair may alter the building
+valid but not necessarily a good tour, and the repair may alter the building
 blocks inherited from parents. Uray et al. reinforce this point by showing
 that tour symmetries and edge structure affect whether fit parents produce
 fit offspring~\cite{uray2023csrx}. Repair should therefore be evaluated by
@@ -119,5 +119,5 @@ affects mean and best tour quality on standard benchmarks.
 
 Taken together, the literature points to three things that matter for
 GA-based TSP solvers: permutation-aware operators, careful handling of
-infeasible offspring, and critical evaluation of repair---since restoring
+infeasible offspring, and critical evaluation of repair, since restoring
 feasibility is not the same as preserving useful structure.

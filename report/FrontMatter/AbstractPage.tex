@@ -6,33 +6,37 @@
 \abstract{\addtocontents{toc}{\vspace{1em}}
 
 The Traveling Salesman Problem (TSP) is a classical combinatorial
-optimisation problem that seeks the shortest closed tour visiting each city
-exactly once.  Because the search space grows factorially with the number of
-cities, exact methods become impractical for non-trivial instances, making
-metaheuristic approaches such as Genetic Algorithms (GAs) attractive
-alternatives.  A persistent challenge when applying GAs to the TSP is that
-standard crossover and mutation operators can produce infeasible solutions
---- chromosomes that visit some cities more than once while omitting others
---- leading to meaningless fitness evaluations and distorted selection
-pressure.
+optimisation problem that seeks the shortest closed tour visiting each
+city exactly once.  Because the search space grows factorially with the
+number of cities, exact methods become impractical for non-trivial
+instances, making metaheuristic approaches such as Genetic Algorithms
+(GAs) attractive alternatives.  A persistent challenge in applying GAs
+to the TSP is that naive crossover operators produce infeasible
+solutions --- chromosomes visiting some cities multiple times while
+omitting others --- leading to meaningless fitness evaluations and
+distorted selection pressure.
 
-This report investigates the design, implementation, and critical analysis
-of a GA for the static single-objective TSP with a focus on feasibility
-repair mechanisms.  We implement three permutation-preserving crossover
-operators (PMX, OX, CX), two mutation operators (swap, inversion), and a
-repair mechanism that diagnoses constraint violations and restores
-feasibility through duplicate removal and missing-city insertion.  Using the
-kroA100 benchmark instance (100 cities, known optimal tour length 21\,282),
-we conduct a comparative experiment of 30 independent runs per
-constraint-handling strategy, evaluating solution quality, convergence
-behaviour, and population diversity.  A Wilcoxon signed-rank test confirms a
-statistically significant difference between repair-enabled and unrepaired
-runs ($p < 0.001$), demonstrating that without repair, the GA converges to
-artificially low but invalid fitness values.  Parameter sensitivity analysis
-further explores the interaction between GA configuration and the repair
-mechanism's effectiveness.  Our findings highlight the critical role of
-constraint handling in permutation-based evolutionary optimisation and
-provide empirical evidence for the trade-offs between feasibility
-enforcement and search-space exploration.
+This report investigates the design, implementation, and critical
+analysis of a GA for the static single-objective TSP with a focus on
+feasibility repair mechanisms.  The primary GA pipeline pairs naive
+single-point crossover with a random-insertion repair step that
+diagnoses constraint violations (duplicates and missing cities) and
+restores feasibility, so repair is invoked on every offspring.  We
+compare this against the two alternative constraint-handling approaches
+identified in the assignment specification: a penalty function that
+inflates the fitness of infeasible chromosomes in proportion to
+violations, and the feasibility-preserving Partially Mapped Crossover
+(PMX) operator that guarantees valid offspring by construction.  Using
+the kroA100 benchmark (100 cities, known optimal tour length
+21\,282), we run a three-arm comparison of 30 independent seeds per
+strategy alongside a 1\,620-run parameter sensitivity sweep over
+population size, crossover rate, mutation rate, and selection method.
+Repair achieves the lowest mean tour length ($49\,778$), with PMX close
+behind ($50\,655$) and penalty noticeably worse ($57\,948$); all three
+arms produce valid tours, so the differences reflect genuine quality
+rather than infeasibility artefacts.  The findings show that direct
+feasibility enforcement via repair can match or modestly outperform
+feasibility-preserving operators on this benchmark, and substantially
+outperform a penalty-based alternative.
 }
 \clearpage

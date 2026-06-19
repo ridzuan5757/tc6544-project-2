@@ -8,12 +8,123 @@
 
 \subsection{Summary of Findings}
 \label{Conc:Summary}
-TODO.
+
+This project investigated how a repair mechanism affects the quality,
+diversity, and convergence of a Genetic Algorithm applied to the Traveling
+Salesman Problem. The study used the kroA100 benchmark instance (100 cities,
+known optimal tour length 21,282) with a complete GA implementation
+supporting multiple selection, crossover, and mutation operators and a
+configurable repair mechanism with three insertion strategies.
+
+The main findings are as follows:
+
+\begin{enumerate}[nosep]
+    \item \textbf{Repair is necessary for naive crossover.}
+    Naive single-point crossover produces offspring with approximately 23
+    duplicate cities and 23 missing cities out of 100. Without repair, these
+    infeasible chromosomes receive artificially low fitness values because
+    they visit fewer unique cities, corrupting selection pressure and steering
+    the search toward invalid solutions (\sref{T3:RepairCritique}).
+
+    \item \textbf{Repair outperforms penalty-based constraint handling.}
+    In the three-arm comparative experiment (repair, penalty, no-repair),
+    repair produced valid tours with a mean best fitness of 49,778,
+    significantly lower than the penalty arm's 57,948 ($p < 0.001$,
+    Wilcoxon signed-rank test with Bonferroni correction). Direct feasibility
+    enforcement is more effective than indirect penalty-based steering for
+    this problem instance (\sref{T4:Boxplots}).
+
+    \item \textbf{Repair does not accelerate diversity loss.}
+    The repair arm retained slightly higher final population diversity
+    (0.013) than the no-repair baseline (0.010) after 500 generations.
+    The random-insertion repair strategy introduces stochastic variation
+    at repaired positions, counteracting the concern that repair might
+    reduce exploration (\sref{T4:Discussion}).
+
+    \item \textbf{Selection method dominates parameter sensitivity.}
+    Among the four swept parameters, tournament selection had the largest
+    effect on solution quality (median 63,674 vs.\ 89,059 for roulette),
+    followed by mutation rate and population size. Crossover rate had the
+    smallest effect (\sref{T3:Sensitivity}).
+
+    \item \textbf{Best GA performance.}
+    The best configuration (population size 200, crossover rate 0.95,
+    mutation rate 0.10, tournament selection, PMX with repair) achieved a
+    mean best fitness of 47,539 across 30 seeds, with the best single run
+    reaching 37,956 --- a gap of 78.3\% from the known optimal
+    (\sref{T3:Performance}).
+\end{enumerate}
 
 \subsection{Limitations}
 \label{Conc:Limitations}
-TODO.
+
+Several limitations should be noted when interpreting these results.
+
+\textbf{Single benchmark instance.}
+All experiments were conducted on kroA100. While this is a standard TSPLIB
+benchmark, the findings may not generalise to instances with different
+structures (e.g.\ clustered cities, asymmetric distances, or substantially
+larger dimensions).
+
+\textbf{No local search.}
+The GA used in this project is a plain generational algorithm without
+local search operators such as 2-opt or Lin--Kernighan moves. The best
+tour found (37,956) is 78.3\% above the known optimal, a gap that local
+search could substantially reduce. The project's purpose was to study
+constraint-handling strategies rather than to minimise the optimality gap.
+
+\textbf{Single repair strategy tested empirically.}
+Although three repair insertion strategies were implemented (random,
+positional, nearest-neighbour), only random insertion was used in the
+experiments. The other strategies may produce different quality--diversity
+trade-offs.
+
+\textbf{Fixed generation budget.}
+All runs terminated after 500 generations. Longer runs or adaptive
+termination criteria might reveal different convergence behaviours,
+particularly for configurations that had not yet plateaued.
+
+\textbf{Penalty weight not tuned.}
+The penalty function used a fixed weight of 50,000. A systematic tuning
+of the penalty weight might improve the penalty arm's performance,
+narrowing or widening the gap with the repair arm.
 
 \subsection{Future Research Directions}
 \label{Conc:FutureWork}
-TODO: Multi-objective formulations, memetic algorithms, adaptive operators, larger instance scaling, alternative repair strategies.
+
+The following directions extend naturally from the current work:
+
+\begin{enumerate}[nosep]
+    \item \textbf{Memetic algorithms (hybridisation with local search).}
+    Combining the GA with 2-opt or Lin--Kernighan local search after each
+    generation would target the main performance limitation of the current
+    implementation. The interaction between repair and local search is an
+    open question: repair restores feasibility at the chromosome level,
+    while local search improves tour quality at the edge level, and their
+    combined effect on diversity warrants investigation.
+
+    \item \textbf{Adaptive operator selection.}
+    Rather than fixing crossover, mutation, and repair strategies for an
+    entire run, adaptive methods could select operators based on their
+    recent contribution to fitness improvement. This would allow the GA
+    to shift from exploratory operators in early generations to
+    exploitative ones as the population converges.
+
+    \item \textbf{Comparison of repair insertion strategies.}
+    The three implemented strategies (random, positional, nearest-neighbour)
+    offer different trade-offs between speed, bias, and local tour quality.
+    A controlled comparison across all three, with diversity and convergence
+    tracking, would clarify when each strategy is most appropriate.
+
+    \item \textbf{Scaling to larger instances.}
+    Testing on TSPLIB instances with 200--500 cities would reveal whether
+    the observed parameter sensitivities and repair effectiveness hold at
+    larger scales, where the search space grows factorially and diversity
+    maintenance becomes more critical.
+
+    \item \textbf{Multi-objective formulations.}
+    Extending the GA to optimise tour length and diversity simultaneously
+    (e.g.\ using NSGA-II) could provide a more principled approach to the
+    exploration--exploitation trade-off, replacing the implicit diversity
+    management of repair with an explicit objective.
+\end{enumerate}

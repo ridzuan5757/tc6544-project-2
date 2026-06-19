@@ -3,29 +3,28 @@
 %   Maps to brief Tasks 3.1, 3.2, 3.3.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lhead{Task 3. \emph{Evaluation Methodology and Analysis}}
-\section{Task 3: Evaluation Methodology and Analysis}
+\chapter{Task 3: Evaluation Methodology and Analysis}
 \label{Task3}
 
-\subsection{Parameter Sensitivity Analysis (Task 3.1)}
+\section{Parameter Sensitivity Analysis (Task 3.1)}
 \label{T3:Sensitivity}
 
-The sensitivity study used a full-factorial sweep on kroA100 with the
-repair-based pipeline (naive single-point crossover, swap mutation,
-duplicate/missing-city repair on every offspring). The swept parameters and
-their levels are population size $\in \{50, 100, 200\}$, crossover rate
-$\in \{0.70, 0.85, 0.95\}$, mutation rate $\in \{0.01, 0.05, 0.10\}$, and
-selection method $\in \{\text{tournament}, \text{roulette}\}$. The design
-yields $3 \times 3 \times 3 \times 2 = 54$ unique configurations. Each
-configuration was executed for 30 independent seeds with a fixed budget of
-500 generations, producing $54 \times 30 = 1{,}620$ runs. The shared
-instance, fitness, and termination settings are listed in
-\sref{T1:Setup}.
+We ran a full-factorial sweep on kroA100 using the repair-based pipeline
+(naive single-point crossover, swap mutation, duplicate/missing-city repair
+on every offspring). The swept parameters and their levels are population
+size $\in \{50, 100, 200\}$, crossover rate $\in \{0.70, 0.85, 0.95\}$,
+mutation rate $\in \{0.01, 0.05, 0.10\}$, and selection method
+$\in \{\text{tournament}, \text{roulette}\}$. This gives
+$3 \times 3 \times 3 \times 2 = 54$ unique configurations. We executed
+each one for 30 independent seeds at a fixed budget of 500 generations,
+producing $54 \times 30 = 1{,}620$ runs. The shared instance, fitness, and
+termination settings are listed in \sref{T1:Setup}.
 
 \tref{tab:sweep-top} reports the five best configurations ranked by mean
 best fitness over 30 seeds. The gap column expresses the mean as a
 percentage above the known optimal tour length of 21,282.
 
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
     \caption{Top-5 configurations from the parameter sweep, ranked by mean best fitness (lower is better). Gap is relative to the known optimal tour length of 21,282 for kroA100.}
     \label{tab:sweep-top}
@@ -43,42 +42,36 @@ percentage above the known optimal tour length of 21,282.
 \end{table}
 
 All five leading configurations use tournament selection at the largest
-population size with the two highest mutation rates, which already
-foreshadows the marginal-effect ordering below. The per-parameter
-distributions in \autoref{fig:boxplot-pop}, \autoref{fig:boxplot-mutation},
-and \autoref{fig:boxplot-selection} are computed by collapsing the sweep
-over the remaining axes, so each box aggregates the runs in which that
+population size with the two highest mutation rates. The per-parameter
+distributions in \fref{fig:boxplot-pop}, \fref{fig:boxplot-mutation},
+and \fref{fig:boxplot-selection} are computed by collapsing the sweep
+over the remaining axes, so each box aggregates all runs where that
 parameter level appears.
 
 \textbf{Selection method.} Tournament selection produces a median final
-tour length of 64,894, while roulette-wheel selection produces 86,632.
-This is the largest single-parameter effect in the sweep. Roulette
-assigns a selection probability proportional to fitness magnitude, and on
-this instance the spread of tour lengths in the population (tens of
-thousands of units across hundreds of individuals) is small relative to
-the absolute magnitudes, so the proportional weights flatten and the
-operator behaves close to uniform random selection. Tournament selection
-imposes a deterministic best-of-$k$ rule that is invariant to absolute
-fitness scale, and it therefore retains strong selection pressure
-throughout the run.
+tour length of 64,894 versus 86,632 for roulette. This is the largest
+single-parameter effect in the sweep. Roulette assigns selection
+probability proportional to fitness magnitude, and on this instance the
+spread of tour lengths is small relative to the absolute magnitudes, so the
+proportional weights flatten and the operator behaves close to uniform
+random selection. Tournament selection imposes a deterministic best-of-$k$
+rule that is invariant to absolute fitness scale, keeping selection
+pressure strong throughout the run.
 
 \textbf{Mutation rate.} The medians by mutation level are 70,464 at
-$r_m = 0.10$, 76,859 at $r_m = 0.05$, and 91,121 at $r_m = 0.01$. This is
-the second-largest effect. The repair step is destructive enough that
-the population collapses toward a small set of representative tours
-within the first 100--200 generations; without enough mutation, the GA
-cannot reinject diversity once it has been lost, and the remaining 300+
-generations contribute almost nothing. At $r_m = 0.01$ the typical
-offspring is essentially identical to its parents after crossover and
-repair, so the search stalls at whatever local basin it has reached.
+$r_m = 0.10$, 76,859 at $r_m = 0.05$, and 91,121 at $r_m = 0.01$. The
+repair step is destructive enough that the population collapses toward a
+small set of representative tours within the first 100--200 generations.
+Without sufficient mutation, diversity cannot be reinjected, and the
+remaining generations contribute almost nothing. At $r_m = 0.01$ the
+typical offspring is essentially identical to its parents after crossover
+and repair, so the search stalls.
 
 \textbf{Population size.} The medians are 76,355 at pop=200, 81,323 at
-pop=100, and 82,998 at pop=50. This is the smallest of the three
-discrete effects studied. Larger populations carry more genetic material
-into selection, which gives crossover a broader pool of building blocks
-to recombine, but the marginal return is modest compared with switching
-selection method or raising mutation rate. The cost is roughly linear in
-population size for both memory and per-generation time.
+pop=100, and 82,998 at pop=50. This is the smallest of the three effects.
+Larger populations give crossover a broader pool of building blocks, but
+the marginal return is modest compared with switching selection method or
+raising mutation rate.
 
 Crossover rate $r_c$ varies across the top configurations from 0.70 to
 0.95 without a clear ordering, and the sweep table reflects this:
@@ -86,90 +79,55 @@ $r_c = 0.95$ wins by a small margin but $r_c = 0.70$ ranks second, ahead
 of $r_c = 0.85$. The crossover-rate effect is therefore noise-dominated
 at the scale of 30 seeds per cell.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_pop_size.pdf}
-    \caption{Distribution of final tour length by population size (repair enabled, 30 seeds per configuration).}
-    \label{fig:boxplot-pop}
-\end{figure}
+We chose pop\_size~$=$~200, $r_c$~$=$~0.95, $r_m$~$=$~0.10, tournament
+selection as the best configuration. This is the top row of
+\tref{tab:sweep-top} and is used as the best-config replay in
+\sref{T4:BestTour}.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_mutation_rate.pdf}
-    \caption{Distribution of final tour length by mutation rate.}
-    \label{fig:boxplot-mutation}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_selection_method.pdf}
-    \caption{Distribution of final tour length by selection method.}
-    \label{fig:boxplot-selection}
-\end{figure}
-
-The chosen best configuration is therefore pop\_size~$=$~200,
-$r_c$~$=$~0.95, $r_m$~$=$~0.10, tournament selection. This setting is the
-top row of \tref{tab:sweep-top} and is used downstream as the best-config
-replay analysed in \sref{T4:BestTour}.
-
-\subsection{Performance Evaluation (Task 3.2)}
+\section{Performance Evaluation (Task 3.2)}
 \label{T3:Performance}
 
-\textbf{Solution quality.} At the chosen best configuration the GA
-achieves a mean best tour length of 49,347 with a standard deviation of
-3,734, corresponding to a gap of 131.9\% from the known optimum of
-21,282. The best single seed reaches 42,623, a gap of 100.3\%. These
-absolute gaps are large in the context of a 100-city instance with a
-known optimum near 21k. The numbers are nevertheless consistent with
-expectations for the operator stack in use: naive single-point crossover
-is not feasibility-preserving, the random-insertion repair step restores
-validity but injects no problem-specific guidance, and no local-search
-component (2-opt, Lin--Kernighan, or similar) is applied. The GA is
-therefore searching the permutation space using only structural
-recombination and random perturbation, without any TSP-specific heuristic
-to refine the surviving tours.
+\textbf{Solution quality.} At the chosen best configuration we get a mean
+best tour length of 49,347 with a standard deviation of 3,734, a gap of
+131.9\% from the known optimum of 21,282. The best single seed reaches
+42,623 (gap 100.3\%). These gaps are large for a 100-city instance, but
+they are consistent with the operator stack: naive single-point crossover
+is not feasibility-preserving, the random-insertion repair injects no
+problem-specific guidance, and no local-search component (2-opt,
+Lin--Kernighan, or similar) is applied. We are searching the permutation
+space using only structural recombination and random perturbation, with no
+TSP-specific heuristic to refine tours.
 
-\textbf{Convergence rate.} The convergence curves reproduced in
-\sref{T4:Convergence} and \autoref{fig:conv-strategy} show that the bulk
-of the improvement happens in the first roughly 200 generations. After
-that point the mean best fitness flattens, and the remaining 300
-generations contribute only marginal refinement. The 500-generation
-termination is therefore set comfortably past the elbow rather than at
-it, which gives each run room to consolidate but also explains why the
-final means cluster: by generation 500 nearly every run has finished its
-visible improvement.
+\textbf{Convergence rate.} The convergence curves in
+\sref{T4:Convergence} and \fref{fig:conv-strategy} show that most of the
+improvement happens in the first roughly 200 generations. After that the
+mean best fitness flattens. The 500-generation budget sits comfortably
+past the elbow, giving each run room to consolidate.
 
-\textbf{Stability across trials.} The standard deviations of the top
+\textbf{Stability across trials.} Standard deviations across the top
 configurations sit between roughly 2,600 and 3,800 tour-length units,
-i.e.\ about 5--8\% of the mean. The coefficient of variation is moderate
-and consistent across the top five rows in \tref{tab:sweep-top}, and the
-boxplots in \autoref{fig:boxplot-pop}--\autoref{fig:boxplot-selection}
-show no extreme outliers at the chosen best setting. Run-to-run
-variability is dominated by where each seed's population converges
-within the first 100--200 generations rather than by late-stage
-divergence.
+about 5--8\% of the mean. The coefficient of variation is moderate and
+consistent across the top five rows in \tref{tab:sweep-top}, and the
+boxplots in \fref{fig:boxplot-pop}--\fref{fig:boxplot-selection} show no
+extreme outliers at the chosen setting. Run-to-run variability is driven
+by where each seed's population converges in the first 100--200
+generations, not by late-stage divergence.
 
-\textbf{Computational efficiency.} The full sweep of 1,620 runs at 500
-generations each completed in roughly 15 minutes of wall time using 8
-worker processes on the development machine, so per-run cost is on the
-order of 0.5--1 second. Within a single run the repair step adds $O(n)$
-work per offspring, where $n = 100$ is the number of cities, which is
-small relative to the $O(n)$ fitness evaluation already performed each
-generation. The dominant cost driver is population size: doubling
-pop\_size roughly doubles per-generation work, but the marginal solution
-quality from pop=100 to pop=200 is modest (see \tref{tab:sweep-top}),
-which is the quality--cost trade-off the chosen configuration accepts.
+\textbf{Computational efficiency.} The full sweep of 1,620 runs completed
+in roughly 15 minutes of wall time using 8 worker processes, with per-run
+cost on the order of 0.5--1 second. The repair step adds $O(n)$ work per
+offspring, which is small relative to the $O(n)$ fitness evaluation.
 
-\subsection{Critical Analysis of Repair Mechanism (Task 3.3)}
+\section{Critical Analysis of Repair Mechanism (Task 3.3)}
 \label{T3:RepairCritique}
 
-The critical comparison required by the brief uses the three-arm
+We compared three constraint-handling strategies using the three-arm
 experiment from TICKET-17. All three arms share the same GA
 hyperparameters --- population size 100, crossover rate 0.8, mutation
 rate 0.2, tournament selection, swap mutation, 500 generations, 30 seeds
---- so the only varying factor is how the GA handles the feasibility
-constraint that each chromosome must be a Hamiltonian permutation of 100
-cities.
+--- so the only thing that differs is how we enforce the feasibility
+constraint (each chromosome must be a Hamiltonian permutation of 100
+cities).
 
 The three strategies are:
 \begin{itemize}
@@ -190,10 +148,10 @@ The three strategies are:
 \end{itemize}
 
 \tref{tab:repair-summary} summarises the final best-fitness distribution
-over 30 seeds for each strategy, and the corresponding distributional
-view is given in \autoref{fig:boxplot-strategy}.
+over 30 seeds for each strategy, and the distributional view is given in
+\fref{fig:boxplot-strategy}.
 
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
     \caption{Final best-fitness summary over 30 seeds per strategy from the TICKET-17 three-arm comparison. All arms share pop=100, $r_c$=0.8, $r_m$=0.2, tournament selection, 500 generations. Gap is relative to the optimum 21,282.}
     \label{tab:repair-summary}
@@ -208,58 +166,33 @@ view is given in \autoref{fig:boxplot-strategy}.
     \end{tabular}
 \end{table}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.75\textwidth]{../results/figures/boxplot_strategy.pdf}
-    \caption{Distribution of final best fitness by constraint-handling strategy (30 seeds per arm; shared GA hyperparameters).}
-    \label{fig:boxplot-strategy}
-\end{figure}
-
 \textbf{Effectiveness of repair.} Repair attains the lowest mean tour
-length of the three arms, 49,778 versus 50,655 for PMX and 57,948 for
+length of the three arms: 49,778 versus 50,655 for PMX and 57,948 for
 penalty. The repair--PMX margin is roughly 1.7\% of the mean and is
 small compared with the within-arm spread (standard deviations near
 3,200--3,600), so the two feasibility-respecting strategies are
 practically tied on this instance. Penalty trails both by roughly
-16--17\% of the mean, well outside the within-arm spread. The minimum
-single-seed values follow the same ordering at the tail: PMX produces
-the best individual seed at 42,976 with repair close behind at 43,891,
-while penalty's best seed is at 48,092.
+16--17\%, well outside the within-arm spread. The minimum single-seed
+values follow the same ordering: PMX produces the best individual seed at
+42,976 with repair close behind at 43,891, while penalty's best is 48,092.
 
-\textbf{Trade-offs between feasibility enforcement and exploration.} The
-three strategies place the feasibility constraint at different points in
-the offspring lifecycle, and each choice trades a different aspect of
-search behaviour. Repair enforces feasibility after crossover and
-mutation by overwriting the offspring's duplicate positions with the
-missing cities at random. This destroys the local genetic information
-that the offspring inherited about those positions --- whatever the
-crossover operator was trying to combine at the conflict sites is
-discarded --- but it guarantees that every evaluated chromosome
-contributes a real tour to the next generation's selection pressure. PMX
-preserves more parental structure because the crossover operator itself
-respects the permutation constraint and never produces conflicts, but
-PMX is one specific operator from a constrained family, so the
-recombination dynamics it can express are narrower than the wider set of
-naive-plus-repair combinations. Penalty preserves all genetic
-information from the operators, infeasible or not, but spends part of
-the selection budget on candidates that may never become feasible during
-the run; the penalty weight then has to be tuned high enough to
-discourage infeasibility without flattening the fitness landscape among
-feasible candidates.
+\textbf{Trade-offs between feasibility enforcement and exploration.}
+Repair enforces feasibility after crossover by overwriting duplicate
+positions with missing cities at random. This destroys the local genetic
+information at conflict sites but guarantees every evaluated chromosome is
+a real tour. PMX avoids the problem entirely since the crossover operator
+itself respects the permutation constraint, though it limits recombination
+to one specific operator family. Penalty preserves all genetic information
+but wastes part of the selection budget on candidates that may never become
+feasible; the penalty weight must also be tuned carefully.
 
-\textbf{Comparison with alternatives.} Penalty is the weakest of the
-three on this instance, trailing repair by about 16\% in mean tour
-length. The penalty weight of 50,000 is large enough that infeasible
-individuals are clearly disfavoured in tournaments against feasible
-ones, but until the population converges away from infeasibility the GA
-is still spending part of its selection pressure on chromosomes that
-contribute no usable tour information. PMX is the most architecturally
-informative comparator because it removes the feasibility problem at the
-operator level rather than patching it after the fact. The fact that
-repair edges out PMX by only about 2\% indicates that the assignment's
-repair-centric pipeline is competitive with a clean
-feasibility-preserving alternative on kroA100, and that on this instance
-the choice between the two is essentially a design preference rather
-than a performance gap. The pairwise differences are visible in the
-boxplot spread in \autoref{fig:boxplot-strategy} without requiring
-inferential machinery.
+\textbf{Comparison with alternatives.} Penalty is the weakest of the three,
+trailing repair by about 16\% in mean tour length. The weight of 50,000 is
+enough to disfavour infeasible individuals in tournaments, but the GA still
+spends selection pressure on chromosomes that contribute no usable tour.
+PMX is the more informative comparator since it removes the feasibility
+problem at the operator level. The fact that repair edges out PMX by only
+about 2\% shows that the repair-centric pipeline is competitive with a
+clean feasibility-preserving alternative on kroA100. On this instance the
+choice between the two is a design preference rather than a performance
+gap, as the boxplot spread in \fref{fig:boxplot-strategy} makes clear.

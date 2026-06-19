@@ -3,151 +3,84 @@
 %   Mandated by Project Task 4.2 ("future research directions").
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lhead{Conclusion and Future Work}
-\section{Conclusion and Future Research Directions}
+\chapter{Conclusion and Future Research Directions}
 \label{SecConclusion}
 
-\subsection{Summary of Findings}
+\section{Summary of Findings}
 \label{Conc:Summary}
 
-This project investigated a Genetic Algorithm for the static single-objective
-Traveling Salesman Problem on the kroA100 benchmark instance (100 cities,
-known optimal tour length 21\,282).  The primary pipeline pairs naive
-single-point crossover with a random-insertion repair step that diagnoses
-duplicates and missing cities and restores feasibility on every offspring.
-Two alternative constraint-handling strategies were implemented as
-comparators: a penalty function that inflates the fitness of infeasible
-chromosomes, and the feasibility-preserving Partially Mapped Crossover
-operator (PMX).
+We investigated a Genetic Algorithm for the Traveling Salesman Problem on the
+kroA100 benchmark (100 cities, known optimal tour length 21\,282). The primary
+pipeline pairs naive single-point crossover with a random-insertion repair
+step. We compared it against two alternatives: a penalty function and the
+feasibility-preserving PMX operator.
 
-The main findings are as follows:
+The main findings are:
 
 \begin{enumerate}[nosep]
-    \item \textbf{Repair achieves the lowest tour length among the three
-    constraint-handling strategies.}
-    In the three-arm comparison (\sref{T4:Boxplots}), the repair arm
-    produced a mean best fitness of $49\,778$, with PMX close behind at
-    $50\,655$ and the penalty arm noticeably worse at $57\,948$.  All
-    three arms returned valid tours at the end of every run, so the gaps
-    reflect genuine differences in search quality rather than infeasibility
-    artefacts.
+    \item \textbf{Repair and PMX are competitive; penalty lags behind.}
+    In the three-arm comparison (\sref{T4:Boxplots}), repair achieved a
+    mean best fitness of $49\,778$ and PMX $50\,655$ --- practically tied
+    given standard deviations near 3,200--3,600. The penalty arm came in
+    noticeably worse at $57\,948$. The repair-centric pipeline is therefore
+    a credible alternative to a feasibility-preserving operator, while
+    penalty-based handling trails both.
 
-    \item \textbf{The assignment's repair-centric pipeline is competitive
-    with the architecturally clean PMX alternative.}
-    The gap between repair ($49\,778$) and PMX ($50\,655$) is small
-    relative to the gap to penalty ($57\,948$).  Direct feasibility
-    enforcement is therefore a credible alternative to a feasibility-
-    preserving operator, while penalty-based handling lags both.
-
-    \item \textbf{Selection method is the dominant parameter.}
+    \item \textbf{Selection method is the dominant parameter, followed by
+    mutation rate.}
     The $1\,620$-run sensitivity sweep (\sref{T3:Sensitivity}) shows
     tournament selection strongly outperforming roulette across all
-    population sizes, crossover rates, and mutation rates.
-
-    \item \textbf{Mutation rate is the second-order parameter; population
-    size third.}
-    Higher mutation rates reduce premature convergence and improve mean
-    tour length, while population size has a smaller but consistent
-    monotonic effect.  Crossover rate had the weakest standalone effect
-    over the swept range.
+    settings. Higher mutation rates reduce premature convergence and
+    improve mean tour length, while population size has a smaller monotonic
+    effect. Crossover rate had the weakest standalone effect.
 
     \item \textbf{Best configuration.}
     Population size $200$, crossover rate $0.95$, mutation rate $0.10$,
-    tournament selection achieved a mean best fitness of $49\,378$ across
-    seeds (mean gap $131.9\%$ from optimal), with the best single seed
-    reaching $42\,623$ (gap $100.3\%$).
+    tournament selection achieved a mean best fitness of $49\,347$ (gap
+    $131.9\%$ from optimal), with the best single seed reaching $42\,623$
+    (gap $100.3\%$).
 \end{enumerate}
 
-The headline conclusion is that the assignment's repair-centric primary
-pipeline is competitive with feasibility-preserving PMX on this benchmark
-and substantially better than penalty-based handling.
-
-\subsection{Limitations}
+\section{Limitations}
 \label{Conc:Limitations}
 
-Several limitations should be noted when interpreting these results.
+\begin{itemize}[nosep]
+    \item \textbf{Single benchmark instance.} All experiments used kroA100.
+    The findings may not generalise to larger instances, asymmetric TSP
+    variants, or different city distributions.
 
-\textbf{Single benchmark instance.}
-All experiments were conducted on kroA100.  The findings may not generalise
-to larger TSPLIB instances, asymmetric TSP variants, or instances with
-substantially different city distributions.
+    \item \textbf{No local-search hybridisation.} The $\sim\!100\%$ gap
+    from optimal reflects the absence of 2-opt or Lin--Kernighan refinement,
+    not a flaw in repair itself. A plain generational GA is not expected to
+    close this gap on a 100-city instance.
 
-\textbf{Single repair strategy in the production pipeline.}
-Three repair insertion strategies were implemented (random, positional,
-nearest-neighbour), but only random insertion was used in the experiments
-reported here.  The remaining two were not exercised in the production
-pipeline.
+    \item \textbf{Single repair strategy tested.} We implemented three
+    insertion strategies (random, positional, nearest-neighbour) but only
+    exercised random insertion in the reported experiments.
+\end{itemize}
 
-\textbf{No local-search hybridisation.}
-The best mean gap of $\sim\!100\%$ from optimal reflects the absence of
-2-opt or Lin--Kernighan refinement rather than a flaw in the repair
-mechanism itself.  A plain generational GA, with or without repair, is not
-expected to close this gap on a 100-city instance.
-
-\textbf{Diversity tracked only via Hamming distance.}
-Population diversity was monitored using pairwise Hamming distance over
-chromosome positions.  \cite{cicirello2023permutationoperators} argues
-that edge-based diversity is more TSP-specific because fitness depends on
-adjacent city pairs rather than absolute positions; this project does not
-implement edge-based metrics.
-
-\textbf{Naive crossover as primary by design.}
-Naive single-point crossover was deliberately chosen as the primary
-operator so that the repair mechanism is load-bearing rather than
-decorative.  A natural alternative --- using PMX or Order Crossover (OX) as
-the primary operator with repair as a safety net --- is implemented but is
-not the configuration evaluated in the three-arm comparison.
-
-\textbf{Penalty arm uses a single fixed weight.}
-The penalty function applies a fixed multiplicative weight of $50\,000$
-per violation.  \cite{chehouri2016violationfactor} reports that adaptive
-penalty schemes that scale with constraint violation magnitude can
-outperform fixed weights; this was not tested.
-
-\subsection{Future Research Directions}
+\section{Future Research Directions}
 \label{Conc:FutureWork}
 
-The following directions extend the current work:
-
 \begin{enumerate}[nosep]
-    \item \textbf{Edge-based diversity instrumentation.}
-    Add edge-overlap and edge-diversity metrics alongside Hamming, and
-    re-run the three-arm comparison and sensitivity sweep under the new
-    instrumentation.  TSP fitness depends on the set of edges in a tour,
-    so edge-based metrics should track convergence more faithfully than
-    position-based ones (\cite{cicirello2023permutationoperators}).
-
     \item \textbf{Hybrid local search.}
     Integrate 2-opt or Lin--Kernighan refinement after crossover and
-    repair, applied either to every offspring or to elite individuals
-    only.  This targets the $\sim\!100\%$ optimality gap directly and
-    is the standard route to competitive TSP results in the GA literature
+    repair. This directly targets the optimality gap and is the standard
+    route to competitive GA-based TSP results
     (\cite{liu2014powerfulga}).
 
-    \item \textbf{Adaptive repair strategy.}
-    Empirically compare random, positional, and nearest-neighbour
-    insertion across the same seeds and configurations used here, then
-    design an adaptive variant that selects an insertion rule based on
-    current population diversity or on the recent fitness contribution
-    of each rule.
-
     \item \textbf{Larger and structurally different benchmarks.}
-    Extend the experimental harness to kroA200, kroA500, and an
-    asymmetric TSP instance.  This would reveal whether the observed
-    ranking (repair $\succ$ PMX $\succ$ penalty) holds at larger scales
-    and under asymmetric distance matrices.
+    Extend the experiments to kroA200, kroA500, and an asymmetric TSP
+    instance to test whether the repair $\succ$ PMX $\succ$ penalty
+    ranking holds at larger scales.
+
+    \item \textbf{Adaptive repair strategy.}
+    Compare random, positional, and nearest-neighbour insertion across the
+    same seeds, then design an adaptive variant that selects a rule based
+    on current population diversity.
 
     \item \textbf{Adaptive penalty weights.}
     Implement the violation-factor approach from
-    \cite{chehouri2016violationfactor} and compare it against the
-    fixed-weight baseline used in the penalty arm.  This isolates whether
-    the penalty arm's poor showing reflects an intrinsic limitation of
-    penalty-based handling or simply an untuned weight.
-
-    \item \textbf{Operator interaction studies.}
-    The sensitivity sweep fixed \texttt{crossover\_method} at naive and
-    varied population size, crossover rate, mutation rate, and selection
-    method.  A crossed sweep that also varies the crossover operator
-    (naive, PMX, OX, CX) would quantify operator-by-parameter
-    interactions directly, and would clarify whether the parameter
-    rankings reported here hold under feasibility-preserving operators.
+    \cite{chehouri2016violationfactor} to determine whether the penalty
+    arm's poor showing is intrinsic or simply due to an untuned weight.
 \end{enumerate}

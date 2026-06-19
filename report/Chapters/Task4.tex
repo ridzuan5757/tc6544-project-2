@@ -4,104 +4,98 @@
 %   meta-instruction governing the rest of this document.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lhead{Task 4. \emph{Visualisation and Results}}
-\section{Task 4: Visualisation and Results}
+\chapter{Task 4: Visualisation and Results}
 \label{Task4}
 
-This chapter visualises the experimental output produced in \sref{Task3}.
-Part A is the three-arm constraint-handling comparison (repair vs.\ PMX vs.\
-penalty); Part B is the per-parameter sensitivity sweep around the best
-configuration. All convergence curves are mean trajectories across 30 seeds;
-all boxplots aggregate the 30 final tour lengths from those same runs.
+This chapter visualises the experimental output from \cref{Task3}. Part A
+covers the three-arm constraint-handling comparison (repair vs.\ PMX vs.\
+penalty); Part B covers the per-parameter sensitivity sweep. All convergence
+curves are mean trajectories across 30 seeds; all boxplots aggregate the 30
+final tour lengths from those runs.
 
-\subsection{Convergence Curves}
+\section{Convergence Curves}
 \label{T4:Convergence}
 
 \fref{fig:conv-strategy} compares the best-fitness trajectories of the three
-constraint-handling strategies. The repair arm drops fastest in the first
-50--100 generations and settles to the lowest mean plateau; PMX tracks repair
-closely once its built-in feasibility takes effect; the penalty arm stays
-visibly higher throughout because the additive penalty keeps inflating the
-fitness of partially infeasible parents that selection still propagates.
+constraint-handling strategies. Repair drops fastest in the first 50--100
+generations and settles to the lowest plateau. PMX tracks it closely, while
+the penalty arm stays visibly higher throughout because the additive penalty
+keeps inflating the fitness of partially infeasible parents that selection
+still propagates.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{../results/figures/convergence_best_fitness.pdf}
     \caption{Mean best-fitness convergence per constraint-handling strategy (30 seeds, kroA100). Repair converges to the lowest plateau, PMX overlaps closely, and the penalty arm remains elevated.}
     \label{fig:conv-strategy}
 \end{figure}
 
-\fref{fig:conv-combined} adds the mean-population and diversity panels
-alongside best fitness. The diversity curve shows that all three arms lose
-the bulk of their population diversity in the first 100 generations; the
-repair arm retains a marginally higher floor, which is consistent with the
-stochastic re-insertion step injecting variation at repaired loci.
+\fref{fig:conv-combined} adds the mean-population and diversity panels.
+All three arms lose the bulk of their population diversity in the first
+100 generations. The repair arm retains a marginally higher diversity
+floor, likely from the stochastic re-insertion step injecting variation at
+repaired loci.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{../results/figures/convergence_combined.pdf}
     \caption{Three-panel convergence: best fitness (left), mean population fitness (centre), and population diversity (right) per strategy.}
     \label{fig:conv-combined}
 \end{figure}
 
-The remaining convergence figures isolate the effect of each GA parameter
-swept in Part B, holding the other parameters at the best-configuration
-values. \fref{fig:conv-pop} shows that larger populations converge to a
-lower final fitness, with diminishing returns past pop\_size~$=$~200.
-\fref{fig:conv-mutation} shows that the higher mutation rate ($r_m = 0.10$)
-converges faster and to a lower plateau than the lower rates, which stall
-earlier. \fref{fig:conv-selection} shows the clearest separation: tournament
-selection dominates roulette throughout the run, with roulette plateauing at
-a substantially higher fitness.
+The remaining convergence figures isolate each swept parameter, holding the
+others at best-configuration values. \fref{fig:conv-pop} shows larger
+populations converging to lower final fitness, with diminishing returns past
+pop\_size~$=$~200. \fref{fig:conv-mutation} shows the higher mutation rate
+($r_m = 0.10$) converging faster and to a lower plateau, while lower rates
+stall earlier. \fref{fig:conv-selection} gives the clearest separation:
+tournament selection dominates roulette across the full run.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{../results/figures/convergence_by_pop_size.pdf}
     \caption{Best-fitness convergence by population size. Larger populations reach lower plateaus, with diminishing returns past pop\_size~$=$~200.}
     \label{fig:conv-pop}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{../results/figures/convergence_by_mutation_rate.pdf}
     \caption{Best-fitness convergence by mutation rate. Higher mutation rates converge faster and to lower final values.}
     \label{fig:conv-mutation}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{../results/figures/convergence_by_selection.pdf}
     \caption{Best-fitness convergence by selection method. Tournament selection dominates roulette across the full horizon.}
     \label{fig:conv-selection}
 \end{figure}
 
-\fref{fig:conv-best-worst} contrasts the best and worst configurations from
-the sweep on a shared axis. The vertical gap between the two curves is wider
-than any single-parameter effect shown above, indicating that the
-interaction between selection method, mutation rate, and population size
-matters more than any one of them in isolation.
+\fref{fig:conv-best-worst} contrasts the best and worst configurations on a
+shared axis. The gap between the two curves is wider than any
+single-parameter effect above, which tells us that parameter interactions
+matter more than any one parameter alone.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{../results/figures/convergence_best_vs_worst.pdf}
     \caption{Best vs.\ worst sweep configuration. The gap between the two curves exceeds any single-parameter sensitivity, showing that parameter interactions dominate.}
     \label{fig:conv-best-worst}
 \end{figure}
 
-\subsection{Solution-Quality Distribution Across Runs}
+\section{Solution-Quality Distribution Across Runs}
 \label{T4:Boxplots}
 
-\fref{fig:boxplot-strategy} shows the distribution of final tour lengths
-across the 30 seeds of each constraint-handling arm. All three arms produce
-valid tours by construction (PMX preserves the permutation; repair restores
-it; the penalty arm reports the penalised score, with the underlying
-chromosome resolved to feasibility at evaluation time), so the visible
-separation reflects genuine quality differences rather than infeasibility
-artefacts. The repair median sits at the bottom, PMX overlaps with repair
-through most of its interquartile range, and the penalty box is offset
-clearly above both --- its lower whisker does not overlap the upper whiskers
-of repair or PMX.
+\fref{fig:boxplot-strategy} shows the distribution of final tour lengths for
+each constraint-handling arm. All three arms produce valid tours (PMX
+preserves the permutation, repair restores it, and the penalty arm resolves
+chromosomes to feasibility at evaluation time), so the separation reflects
+genuine quality differences. The repair median sits lowest, PMX overlaps
+with repair through most of its interquartile range, and the penalty box is
+clearly offset above both.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{../results/figures/boxplot_strategy.pdf}
     \caption{Final tour length by constraint-handling strategy (30 runs each). Repair and PMX overlap; penalty is visibly separated upward.}
@@ -109,89 +103,81 @@ of repair or PMX.
 \end{figure}
 
 The per-parameter boxplots in
-\fref{fig:boxplot-pop}--\fref{fig:boxplot-selection} mirror the
-sensitivity ordering visible in the convergence curves. Selection method
-produces the largest box separation: the roulette and tournament boxes do
-not overlap at all. Mutation rate shows a clear monotonic improvement as
-$r_m$ rises from 0.01 to 0.10. Population size produces a more modest
-shift, with the larger populations producing tighter as well as lower
-distributions.
+\fref{fig:boxplot-pop}--\fref{fig:boxplot-selection} mirror the sensitivity
+ordering from the convergence curves. Selection method produces the largest
+separation --- tournament and roulette do not overlap at all. Mutation rate
+shows a monotonic improvement from 0.01 to 0.10. Population size produces a
+more modest shift.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{../results/figures/boxplot_pop_size.pdf}
     \caption{Final tour length by population size. Larger populations produce lower and tighter distributions, but the effect is modest compared to the other two parameters.}
     \label{fig:boxplot-pop}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{../results/figures/boxplot_mutation_rate.pdf}
     \caption{Final tour length by mutation rate. A clear monotonic improvement is visible from $r_m = 0.01$ to $r_m = 0.10$.}
     \label{fig:boxplot-mutation}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{../results/figures/boxplot_selection_method.pdf}
     \caption{Final tour length by selection method. The tournament and roulette boxes do not overlap, making selection the most influential single parameter.}
     \label{fig:boxplot-selection}
 \end{figure}
 
-\subsection{Best-Tour Visualisation}
+\section{Best-Tour Visualisation}
 \label{T4:BestTour}
 
 \fref{fig:best-tour} renders the best tour found across the entire sweep:
 fitness 42{,}622.53, obtained from seed 16 of the best configuration
 (pop\_size~$=$~200, $r_c = 0.95$, $r_m = 0.10$, tournament, PMX with
 repair). Each edge is drawn with \texttt{matplotlib.pyplot.quiver} so that
-the arrowhead indicates the direction in which the tour traverses the edge.
-The gap from the known optimal of 21{,}282 is approximately 100.3\%.
+the arrowhead shows traversal direction. The gap from the known optimal of
+21{,}282 is approximately 100.3\%.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.75\textwidth]{../results/figures/best_tour.pdf}
     \caption{Best tour found on kroA100 (fitness 42{,}622.53, seed 16, best sweep configuration). Arrows drawn with \texttt{ax.quiver} show traversal direction; the gap from the optimal is 100.3\%.}
     \label{fig:best-tour}
 \end{figure}
 
-The large gap from the optimal is expected. The GA used here pairs a naive
-crossover with random-insertion repair and no local-search component;
-state-of-the-art TSP solvers attach a 2-opt or Lin--Kernighan step inside
-the evaluation loop, which removes exactly the kind of crossing edges
-visible in this figure. Reading the tour confirms that diagnosis: several
-edges cross each other and several others detour through a single city
-that a 2-opt swap would obviously resolve. The chosen baseline is the
-assignment's specified setup, not a competitive TSP heuristic, and the gap
-should be read in that light.
+The large gap is expected. We used naive crossover with random-insertion
+repair and no local search; state-of-the-art solvers attach a 2-opt or
+Lin--Kernighan step that removes exactly the kind of crossing edges visible
+in the figure. Several edges cross and several others detour through a city
+that a single 2-opt swap would fix. We are evaluating the assignment's
+specified baseline, not a competitive TSP heuristic, and the gap should be
+read accordingly.
 
-\subsection{Results Discussion}
+\section{Results Discussion}
 \label{T4:Discussion}
 
-Read together, the convergence curves and boxplots support a single
-ordering of the three constraint-handling strategies by mean solution
-quality: repair $\le$ PMX $<$ penalty. \fref{fig:boxplot-strategy} fixes
-the comparative ranking on final tour length, and
-\fref{fig:conv-strategy} confirms that this ranking is not an artefact of
-one arm converging slowly --- the penalty arm plateaus at a higher fitness
-rather than catching up given more generations. This is consistent with
-the critique developed in \sref{T3:RepairCritique}: enforcing feasibility
-directly through repair gives the GA a cleaner search signal than
-re-weighting infeasibility through an additive penalty.
+Looking at the results together, the three constraint-handling strategies
+rank by mean solution quality as repair $\le$ PMX $<$ penalty.
+\fref{fig:boxplot-strategy} fixes this ranking on final tour length, and
+\fref{fig:conv-strategy} confirms it is not just a matter of slow
+convergence --- the penalty arm plateaus higher rather than catching up.
+This aligns with the critique in \sref{T3:RepairCritique}: enforcing
+feasibility directly through repair gives the GA a cleaner search signal
+than penalising infeasibility.
 
 The per-parameter views in
 \fref{fig:conv-pop}--\fref{fig:conv-selection} and
 \fref{fig:boxplot-pop}--\fref{fig:boxplot-selection} agree on the same
-ranking of parameter influence: selection method matters most, mutation
-rate matters next, and population size matters least. The
-best-vs-worst contrast in \fref{fig:conv-best-worst} is wider than any of
-those single-parameter effects, which means the right reading is that
-parameter choices interact rather than acting additively.
+influence ranking: selection method first, mutation rate second, population
+size third. The best-vs-worst gap in \fref{fig:conv-best-worst} exceeds any
+single-parameter effect, which means these parameters interact rather than
+acting additively.
 
-The absolute gap from the optimal is the obvious limitation of the
-baseline. As foreshadowed in \sref{T3:RepairCritique} and visible in
-\fref{fig:best-tour}, the residual crossings would yield to a 2-opt local
-search applied either inside the GA loop or as a post-processing step;
-integrating such a step is the most direct extension of this work and
-would address the gap without altering the constraint-handling
-conclusions drawn here.
+The absolute gap from optimal is the obvious limitation. As we noted in
+\sref{T3:RepairCritique} and as \fref{fig:best-tour} makes visible, the
+residual crossings would yield to a 2-opt local search applied inside the
+GA loop or as a post-processing step. That is the most direct extension of
+this work, and it would close the gap without changing the
+constraint-handling conclusions.

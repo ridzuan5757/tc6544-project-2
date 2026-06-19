@@ -9,108 +9,167 @@
 \subsection{Benchmark TSP Instance (Task 1.1)}
 \label{T1:Benchmark}
 
-The benchmark instance selected for this study is \textbf{kroA100}, a 100-city Traveling Salesman Problem (TSP) instance obtained from TSPLIB95 \cite{reinelt1991tsplib}. The assignment requires an instance with 70--150 cities, and kroA100 satisfies this requirement while remaining computationally manageable for repeated Genetic Algorithm (GA) experiments.
+The benchmark instance used throughout this project is \textbf{kroA100}, drawn
+from the TSPLIB collection compiled by Reinelt~\cite{reinelt1991tsplib} and
+described in the comprehensive treatment of Applegate et
+al.~\cite{applegate2006traveling}. The instance contains 100 cities placed in
+the Euclidean plane, uses the symmetric \texttt{EUC\_2D} edge-weight type, and
+has a known optimal tour length of 21{,}282. Its dimension lies within the
+70--150 range required by the project brief.
+
+The choice of kroA100 is deliberate. It is one of the most frequently cited
+TSPLIB instances in the GA-for-TSP literature, which means its random
+Euclidean layout, its optimum, and its level of difficulty are well documented
+and directly comparable to prior empirical studies. The size of $n=100$ is
+large enough to make exhaustive enumeration impossible
+($99!/2 \approx 4.7\times 10^{155}$ distinct tours), yet small enough to
+support a 54-configuration parameter sweep with 30 independent runs each
+within a practical compute budget. A known optimum allows results to be
+reported as a relative gap, which is more interpretable than absolute tour
+length in isolation.
 
 \begin{table}[h]
 	\centering
-	\caption{kroA100 Benchmark Instance Metadata}
+	\caption{kroA100 benchmark instance metadata.}
 	\label{tab:instance}
 	\begin{tabular}{ll}
 		\hline
-		\textbf{Property} & \textbf{Details} \\
+		\textbf{Property} & \textbf{Value} \\
 		\hline
 		Name & kroA100 \\
-		Dimension & 100 cities \\
-		Edge-weight type & EUC\_2D \\
-		Known optimal tour length & 21,282 \\
+		Number of cities ($n$) & 100 \\
+		Edge-weight type & \texttt{EUC\_2D} (symmetric Euclidean 2D) \\
+		Known optimal tour length & 21{,}282 \\
 		Instance class & Symmetric Euclidean TSP \\
-		Source & TSPLIB95 \cite{reinelt1991tsplib} \\
+		Source & TSPLIB~\cite{reinelt1991tsplib,applegate2006traveling} \\
 		\hline
 	\end{tabular}
 \end{table}
 
-Four TSPLIB95 candidates were considered: \textbf{ch150}, \textbf{eil101}, \textbf{kroA100}, and \textbf{lin105}. All four instances are within the required size range and use the EUC\_2D distance type. Among them, kroA100 was selected because it has a moderate dimension of 100 cities, a published optimal tour length, and a widely used random Euclidean layout. The known optimum allows the quality of GA solutions to be evaluated using absolute tour length and relative error, while the 100-city size is large enough to make exhaustive search infeasible but small enough to support multiple independent runs and parameter sweeps within the project timeline.
-
-For EUC\_2D instances, each city $i$ has coordinates $(x_i,y_i)$ and the distance between cities is computed as
+For \texttt{EUC\_2D} instances, each city $i$ has coordinates $(x_i, y_i)$ and
+the inter-city distance follows the TSPLIB convention of nearest-integer
+rounding,
 \[
-d_{ij} = \left\lfloor \sqrt{(x_i-x_j)^2 + (y_i-y_j)^2} + 0.5 \right\rfloor .
+d(i,j) = \left\lfloor \sqrt{(x_i - x_j)^2 + (y_i - y_j)^2} + 0.5 \right\rfloor,
 \]
-Because the distance is symmetric, $d_{ij}=d_{ji}$, and the TSP objective is to find the shortest closed tour through all 100 cities.
+so that $d(i,j) = d(j,i)$. The same rounded distance is used for fitness
+evaluation and for comparison against the published optimum.
 
 \subsection{Formal Mathematical Formulation (Task 1.2)}
 \label{T1:Formulation}
 
-The selected instance can be represented as a complete weighted graph $G=(V,E)$, where $V=\{1,2,\ldots,n\}$ is the set of cities, $n=100$ for kroA100, and $E=\{(i,j): i,j\in V,\ i\neq j\}$ is the set of possible directed arcs between different cities. The cost of travelling from city $i$ to city $j$ is denoted by $d_{ij}$.
+The symmetric TSP on kroA100 is formulated directly as a permutation
+optimisation problem, which matches the GA representation used in the
+remainder of the report. Let $V = \{0, 1, \ldots, n-1\}$ denote the set of
+city indices with $n=100$, and let $d : V \times V \to \mathbb{Z}_{\geq 0}$
+denote the rounded Euclidean distance defined above.
 
-\subsubsection*{Decision Variables}
-For each ordered pair of distinct cities $(i,j)$, define
+A candidate solution is a tour $\pi = (\pi_0, \pi_1, \ldots, \pi_{n-1})$,
+where $\pi$ is a permutation of $V$. The fitness function to be minimised is
+the total length of the closed tour induced by $\pi$,
 \[
-x_{ij} =
-\begin{cases}
-1, & \text{if the tour travels directly from city } i \text{ to city } j,\\
-0, & \text{otherwise.}
-\end{cases}
+\min_{\pi} \; f(\pi)
+\;=\;
+\sum_{i=0}^{n-1} d\!\left(\pi_i,\, \pi_{(i+1) \bmod n}\right),
 \]
-Thus, $x_{ij}$ indicates whether the arc from city $i$ to city $j$ is included in the final tour.
+where the modular index in the final term closes the tour by linking
+$\pi_{n-1}$ back to $\pi_0$.
 
-\subsubsection*{Objective Function}
-The objective is to minimise the total tour distance:
-\[
-\min Z = \sum_{i=1}^{n}\sum_{\substack{j=1\\j\neq i}}^{n} d_{ij}x_{ij}.
-\]
-Here, $Z$ is the total distance of the selected closed tour. A better solution has a smaller value of $Z$.
+Two constraints are implicit in this formulation. The permutation constraint
+requires that every city is visited exactly once, i.e.\
+$\{\pi_0, \pi_1, \ldots, \pi_{n-1}\} = V$ with no repetitions. The
+closed-tour constraint is captured by the modular indexing and forces the
+salesman to return to the starting city. Together they replace the
+incoming-degree, outgoing-degree, and subtour-elimination constraints of the
+classical arc-based integer programming formulation: any permutation of $V$
+is automatically a Hamiltonian cycle, so feasibility reduces to maintaining
+the permutation property under the GA operators.
 
-\subsubsection*{Constraints}
-Each city must be left exactly once:
-\[
-\sum_{\substack{j=1\\j\neq i}}^{n} x_{ij} = 1,
-\quad \forall i \in V.
-\]
-
-Each city must be entered exactly once:
-\[
-\sum_{\substack{i=1\\i\neq j}}^{n} x_{ij} = 1,
-\quad \forall j \in V.
-\]
-
-The solution must form one closed tour rather than several disconnected cycles. This is enforced using subtour elimination constraints:
-\[
-\sum_{i\in S}\sum_{\substack{j\in S\\j\neq i}} x_{ij} \leq |S|-1,
-\quad \forall S \subset V,\quad 2 \leq |S| \leq n-1.
-\]
-These constraints prevent any proper subset of cities from forming its own closed cycle. Combined with the incoming and outgoing degree constraints, they ensure that all cities belong to a single Hamiltonian cycle that returns to the starting city.
-
-Finally, the decision variables are binary:
-\[
-x_{ij}\in\{0,1\},
-\quad \forall i,j\in V,\quad i\neq j.
-\]
-
-\subsubsection*{Properties Relevant to Evolutionary Optimisation}
-The TSP is suitable for evolutionary optimisation because a valid solution can be encoded as a permutation of cities, for example
-\[
-[1,5,12,8,20,\ldots,100].
-\]
-The return from the last city to the first city is assumed when calculating fitness. For a symmetric TSP with $n$ cities, the number of unique tours is $(n-1)!/2$ after accounting for equivalent rotations and reversals. For $n=100$, this search space is far too large for exhaustive enumeration.
-
-This permutation structure is important for GA design. Crossover and mutation operators must preserve, or repair, the condition that every city appears exactly once. If an operator produces repeated or missing cities, the chromosome becomes infeasible and a repair mechanism is required. The Euclidean structure of kroA100 is also useful because short edges and neighbouring city groups can act as building blocks that are preserved and recombined during evolution. Therefore, the formulation links directly to the GA representation, fitness function, feasibility repair process, and later analysis of convergence and diversity.
+The properties of this search space drive every subsequent design choice.
+The space of feasible solutions is discrete and finite, with cardinality
+$n!/(2n)$ once rotational and reflective symmetries of the symmetric tour
+are quotiented out; for $n=100$ this is approximately
+$4.7 \times 10^{155}$. The factorial growth rules out exact search at this
+scale and motivates a population-based metaheuristic such as a Genetic
+Algorithm~\cite{holland1975adaptation,goldberg1989genetic}. The fitness
+landscape is non-convex and multimodal: many tours share similar lengths but
+differ structurally in the edges they use, which is the regime in which
+recombination of partial tours can outperform a single-point local search.
+The permutation constraint, finally, dictates the operator design. Classical
+string-style crossover and bit-flip mutation do not preserve the permutation
+property, so the algorithm must either use feasibility-preserving operators
+or pair an unconstrained operator with an explicit repair step. The present
+project takes the latter route in order to study repair as an explicit
+experimental factor, following the constraint-handling taxonomy reviewed
+by Larra{\~n}aga et al.~\cite{larranaga1999genetic}.
 
 \subsection{Experimental-Setup Justification (Task 1.3)}
 \label{T1:Setup}
 
-The experiments will use \textbf{30 independent runs} for each configuration. Independent runs are necessary because GAs are stochastic algorithms: different random seeds can produce different initial populations, crossover outcomes, mutation events, and final tours. Thirty runs provide enough repeated observations to report mean, standard deviation, best result, and boxplot-based comparisons.
+The experimental protocol is fixed before any results are collected so that
+every configuration is evaluated on identical terms.
 
-Each run terminates after a fixed budget of \textbf{500 generations}. A fixed termination criterion was chosen over convergence-based early stopping to ensure that all runs produce the same number of per-generation data points, simplifying downstream convergence curve comparisons and statistical analysis.
+Each configuration is run for \textbf{30 independent random seeds}. Thirty
+runs is the smallest sample size at which the central limit theorem provides
+a reasonable normal approximation for the sampled mean tour length, which
+allows means, standard deviations, and confidence intervals to be reported
+without leaning on distributional assumptions about the underlying tour-length
+distribution. It is also small enough to keep the full sweep tractable: a
+larger sample would buy diminishing returns in mean-estimate stability while
+multiplying the compute cost linearly across all configurations.
 
-The parameter sensitivity analysis will sweep the following ranges:
+Each run terminates at a fixed budget of \textbf{500 generations}.
+Preliminary convergence curves, reported in §\ref{T4:Convergence}, show that
+the bulk of fitness improvement occurs within roughly the first 200
+generations across all configurations; the remaining 300 generations cover
+the long tail in which late mutations or rare crossover events still trim a
+small number of edges. Using a fixed generation budget rather than an
+adaptive stopping rule ensures that every run produces the same number of
+per-generation observations, which keeps convergence plots, diversity curves,
+and statistical tests directly comparable across configurations.
+
+The parameter sweep covers four GA factors at three or two levels each,
+giving $3 \times 3 \times 3 \times 2 = 54$ unique configurations. The factor
+levels are
 \[
-\text{population size} \in \{50,100,200\},
-\quad
-\text{crossover rate} \in \{0.70,0.85,0.95\},
+\text{pop\_size} \in \{50, 100, 200\}, \qquad
+p_c \in \{0.70, 0.85, 0.95\},
 \]
 \[
-\text{mutation rate} \in \{0.01,0.05,0.10\},
-\quad
-\text{selection method} \in \{\text{tournament},\text{roulette wheel}\}.
+p_m \in \{0.01, 0.05, 0.10\}, \qquad
+\text{selection} \in \{\text{tournament},\, \text{roulette}\}.
 \]
-These ranges cover low, medium, and high settings for the main GA parameters while keeping the total experiment size practical. The resulting comparisons will support the later analysis of solution quality, convergence behaviour, robustness, computational cost, and the effect of feasibility repair.
+Population size brackets the moderate range typical in GA-TSP studies on
+TSPLIB-scale instances. Crossover and mutation rates span the
+low/medium/high settings used in the empirical reviews of Larra{\~n}aga et
+al.~\cite{larranaga1999genetic}, which lets the sweep separate the effect of
+exploration pressure from the effect of disruption. Selection method is
+included at two levels because tournament and roulette selection apply
+qualitatively different selection pressure profiles, and the interaction
+between selection pressure and mutation rate is one of the questions Task 4
+will analyse.
+
+Combining the sweep with the seed replication gives
+$54 \times 30 = 1{,}620$ total runs, which is large enough to support
+non-parametric tests of configuration differences and a per-factor
+sensitivity analysis.
+
+A second group of parameters is held fixed across the sweep because the
+project's design intent is to isolate the four factors above rather than
+explore the full operator space. The tournament size is fixed at $k=3$, the
+number of elite individuals carried over each generation is fixed at 2,
+crossover uses the deliberately naive single-point operator with the repair
+step enabled, and mutation uses the swap operator. The choice of a naive
+single-point crossover with repair is itself an experimental decision: it
+makes the repair mechanism visible by guaranteeing that every offspring
+needs it, which is the configuration Task 2 and Task 3 require for the
+constraint-handling comparison.
+
+Reproducibility is enforced at the run level. Every run is identified by the
+pair (configuration hash, random seed); the configuration hash is a digest of
+the full parameter dictionary so that two runs with different but equivalent
+parameter spellings produce the same identifier. Per-generation best fitness,
+mean fitness, and Hamming diversity are written to CSV files keyed by that
+pair, and the final tours are stored separately. This allows any reported
+figure, table, or statistical test to be regenerated from the stored data
+without re-running the GA.

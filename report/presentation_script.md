@@ -62,7 +62,7 @@ The result is always a valid permutation — every city appears exactly once, no
 
 ### Slide 9 — Our Approach: Repair After the Fact (~1 min 15s)
 
-So instead of switching to PMX, we keep naive crossover and repair every offspring after the fact. This makes the repair mechanism load-bearing on every generation, which is the point of this project.
+So instead of switching to PMX, we keep naive crossover and repair every offspring after the fact. This way, repair has to do real work on every generation, which is the point of this project.
 
 The repair works in two phases. Phase 1 is diagnosis: scan the chromosome left to right, track which cities we have seen, flag duplicates, compute the missing set.
 
@@ -92,6 +92,6 @@ The convergence plot on the right confirms this is not just a matter of converge
 
 ### Slide 12 — Takeaways (~45s)
 
-To wrap up. First, naive crossover paired with repair is competitive with PMX on kroA100 — the mean gap between the two is only about 2%. Second, random insertion preserves population diversity better than deterministic repair strategies. Third, the penalty function trails both feasibility-based approaches by about 16%. And fourth — the broader point — enforcing feasibility directly, whether through repair or a feasibility-preserving operator, gives the GA a much cleaner search signal than trying to penalise infeasibility.
+To wrap up. First, naive crossover with repair performs almost as well as PMX on kroA100 — the difference is only about 2%. Second, random insertion keeps more population diversity than deterministic repair. Third, penalty is about 16% worse than both feasibility-based approaches. And fourth, the main lesson is that fixing or preventing infeasibility works much better than just penalising it.
 
 Thank you. We are happy to take questions.

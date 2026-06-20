@@ -12,15 +12,15 @@
 We use the \textbf{kroA100} instance from the TSPLIB
 collection~\cite{reinelt1991tsplib,applegate2006traveling}. It contains 100
 cities in the Euclidean plane, uses symmetric \texttt{EUC\_2D} edge weights,
-and has a known optimal tour length of 21{,}282. The dimension falls within
+and has a known optimal tour length of 21{,}282. The number of cities falls within
 the 70--150 range required by the project brief.
 
 kroA100 is one of the most cited TSPLIB instances in the GA-for-TSP
-literature, so its difficulty level and optimum are well documented. At
+literature, so its difficulty and optimal value are well known. At
 $n=100$ the search space contains roughly $99!/2 \approx 4.7\times10^{155}$
 distinct tours, which rules out exact enumeration. At the same time, the
-instance is small enough to support a 54-configuration parameter sweep with
-30 runs each within a practical compute budget. Having a known optimum also
+instance is small enough for a 54-configuration parameter sweep with
+30 runs each within a reasonable compute budget. Having a known optimum also
 lets us report results as a relative gap rather than raw tour length.
 
 \begin{table}[htbp]
@@ -76,40 +76,37 @@ $\{\pi_0, \pi_1, \ldots, \pi_{n-1}\} = V$ with no repetitions. The
 closed-tour constraint is captured by the modular indexing and forces the
 salesman to return to the starting city. Together they replace the
 incoming-degree, outgoing-degree, and subtour-elimination constraints of the
-classical arc-based integer programming formulation: any permutation of $V$
-is automatically a Hamiltonian cycle, so feasibility reduces to maintaining
-the permutation property under the GA operators.
+classical arc-based integer programming formulation. Any permutation of $V$
+is automatically a Hamiltonian cycle, so feasibility comes down to keeping
+the permutation property intact under the GA operators.
 
-The search space is discrete and finite. Once we quotient out rotational and
-reflective symmetries, its cardinality is $\dfrac{n!}{2n}$, which for $n=100$ is
-approximately $4.7 \times 10^{155}$. This factorial growth rules out exact
-search and motivates a population-based metaheuristic such as a Genetic
-Algorithm~\cite{holland1975adaptation,goldberg1989genetic}. The fitness
-landscape is non-convex and multimodal: many tours share similar lengths
-but differ structurally in the edges they use, which is where recombination
-of partial tours can outperform single-point local search. The permutation
-constraint also dictates the operator design. Classical string-style crossover
-and bit-flip mutation do not preserve the permutation property, so we must
-either use feasibility-preserving operators or pair an unconstrained operator
-with an explicit repair step. We take the latter route so that repair can be
-studied as an explicit experimental factor, following the constraint-handling
+The search space is discrete and finite. After removing rotational and
+reflective symmetries, the number of distinct tours is $\dfrac{n!}{2n}$, which
+for $n=100$ is approximately $4.7 \times 10^{155}$. This factorial growth
+rules out exact search and motivates a population-based metaheuristic such as
+a Genetic Algorithm~\cite{holland1975adaptation,goldberg1989genetic}.
+The permutation constraint also affects operator design: standard
+string-style crossover and bit-flip mutation do not preserve permutations,
+so we either use feasibility-preserving operators or pair an unconstrained
+operator with a repair step. We choose the second option so that repair can
+be studied as an experimental factor, following the constraint-handling
 taxonomy in Larra{\~n}aga et al.~\cite{larranaga1999genetic}.
 
 \section{Experimental-Setup Justification (Task 1.3)}
 \label{T1:Setup}
 
-We fix the experimental protocol before collecting any results so that every
-configuration is evaluated on identical terms.
+We set the experimental protocol before collecting any results so that every
+configuration is evaluated under the same conditions.
 
 Each configuration is run for \textbf{30 independent random seeds}. Thirty
-seeds gives a reasonable sample for reporting means and standard deviations
-while keeping the full sweep tractable.
+seeds provide a reasonable sample for reporting means and standard deviations
+while keeping the full sweep manageable.
 
 Each run terminates at a fixed budget of \textbf{500 generations}.
 Preliminary convergence curves (\sref{T4:Convergence}) show that most fitness
 improvement happens within roughly the first 200 generations; the remaining
-300 cover the long tail where late mutations or rare crossover events still
-trim a few edges. A fixed generation budget, rather than an adaptive stopping
+300 generations cover the slower phase where late mutations or rare crossover
+events still shorten a few edges. A fixed generation budget, rather than an adaptive stopping
 rule, ensures that every run produces the same number of per-generation
 observations, keeping convergence plots, diversity curves, and statistical
 tests directly comparable.
@@ -124,26 +121,26 @@ $3 \times 3 \times 3 \times 2 = 54$ unique configurations:
 	\text{selection} &\in \{\text{tournament},\, \text{roulette}\}
 \end{align*}
 
-Population size brackets the moderate range typical in GA-TSP studies on
+Population size covers the moderate range commonly used in GA-TSP studies on
 TSPLIB-scale instances. Crossover and mutation rates span the
 low/medium/high settings from the empirical reviews of Larra{\~n}aga et
-al.~\cite{larranaga1999genetic}, letting the sweep separate exploration
+al.~\cite{larranaga1999genetic}, so the sweep can separate exploration
 pressure from disruption. We include selection method at two levels because
-tournament and roulette selection apply qualitatively different pressure
-profiles, and the interaction between selection pressure and mutation rate is
+tournament and roulette selection create different pressure
+profiles. The interaction between selection pressure and mutation rate is
 one of the questions \cref{Task4} addresses.
 
 Combining the sweep with 30 seeds gives $54 \times 30 = 1{,}620$ total runs,
-which is enough to support non-parametric tests and a per-factor sensitivity
+which is enough for non-parametric tests and a per-factor sensitivity
 analysis.
 
-A second group of parameters is held fixed across the sweep because we want
-to isolate the four factors above rather than explore the full operator space.
+A second group of parameters is kept fixed across the sweep because we want
+to isolate the four factors above instead of exploring the full operator space.
 Tournament size is $k=3$, elitism carries over 2 individuals per generation,
 crossover uses the deliberately naive single-point operator with repair
-enabled, and mutation uses the swap operator. Choosing naive single-point
-crossover with repair is itself an experimental decision: it guarantees that
-every offspring needs repair, which is the configuration \cref{Task2} and
+enabled, and mutation uses the swap operator. Using naive single-point
+crossover with repair is itself an experimental decision: it ensures that
+every offspring needs repair, which is what \cref{Task2} and
 \cref{Task3} require for the constraint-handling comparison.
 
 Every run is identified by the pair (configuration hash, random seed). The

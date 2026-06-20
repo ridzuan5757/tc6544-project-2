@@ -8,12 +8,12 @@
 \label{SecLiteratureReview}
 
 The Traveling Salesman Problem (TSP) is a standard benchmark for
-combinatorial optimisation. The objective is simple but the search space
-grows factorially, which makes exact solvers impractical for repeated
-experimentation~\cite{applegate2006traveling,reinelt1991tsplib}. Genetic
-Algorithms maintain a population of candidate tours rather than a single
-incumbent, making them a natural fit for exploring permutation
-spaces~\cite{holland1975adaptation,goldberg1989genetic}. Their effectiveness
+combinatorial optimisation. The objective is easy to state but the search space
+grows factorially, so exact solvers are not practical for repeated
+experiments~\cite{applegate2006traveling,reinelt1991tsplib}. Genetic
+Algorithms keep a population of candidate tours instead of a single
+current best, which makes them suitable for searching permutation
+spaces~\cite{holland1975adaptation,goldberg1989genetic}. How well they work
 on the TSP, however, depends on how crossover and mutation handle the
 permutation constraint and what happens when infeasible offspring appear.
 
@@ -29,8 +29,8 @@ mutation design, local search hybridisation, and diversity preservation as
 the recurring themes in GA-TSP
 research~\cite{scholz2019historicalreview,cicirello2023permutationoperators}.
 
-Standard string crossover can destroy the city set, so
-permutation-specific operators were developed early on. Partially Mapped
+Standard string crossover can break the city set, so
+permutation-specific operators were introduced early on. Partially Mapped
 Crossover (PMX) preserves positional mapping, Order Crossover (OX) preserves
 relative order, and Cycle Crossover (CX) preserves cycles of position-wise
 inheritance~\cite{goldberg1985alleles,davis1985applying,oliver1987study}.
@@ -38,16 +38,16 @@ Cicirello classifies permutation operators by what they transmit: absolute
 positions, undirected edges, directed edges, precedences, or cyclic
 precedences~\cite{cicirello2023permutationoperators}. Since TSP tour length
 depends on adjacent city pairs, positional diversity (measured by Hamming
-distance) captures how the population spreads across the city-position
+distance) shows how spread out the population is in the city-position
 space.
 
-State-of-the-art GA variants go well beyond a plain generational loop. Liu
+More advanced GA variants go beyond a simple generational loop. Liu
 uses edge swapping and local search on large
 benchmarks~\cite{liu2014powerfulga}. Eremeev and Kovalenko show that
 recombination design, neighbourhood mutation, restarts, and diversity
 management all matter for asymmetric
-instances~\cite{eremeev2017optimalrecombination}. These are context rather
-than direct baselines; the work here stays focused on GA fundamentals and
+instances~\cite{eremeev2017optimalrecombination}. These works provide context rather
+than direct baselines; our work focuses on GA fundamentals and
 repair on kroA100.
 
 \section{Constraint Handling in Evolutionary Algorithms}
@@ -56,32 +56,32 @@ repair on kroA100.
 Coello Coello surveys constraint-handling techniques for evolutionary
 algorithms: penalty functions, specialised representations, repair methods,
 and feasibility-based selection~\cite{coello2002constraint}. Michalewicz and
-Schoenauer argue that constraints are part of the problem structure, not an
-implementation afterthought~\cite{michalewicz1996evolutionary}. For the TSP,
+Schoenauer argue that constraints are part of the problem structure, not
+something to handle as an afterthought~\cite{michalewicz1996evolutionary}. For the TSP,
 the ``visit every city exactly once'' condition is not a side constraint; it
 defines what makes a chromosome a valid tour.
 
 Penalty functions leave infeasible solutions in the population but add a
 cost proportional to constraint violation. The tuning problem is
-well-known: too weak and the search rewards invalid short tours, too strong
-and useful partial structure is discarded. Chehouri et al. propose a
+well known: if the penalty is too weak, the search favours invalid short
+tours; if too strong, useful partial structure is thrown away. Chehouri et al. propose a
 violation-based alternative to avoid
 penalty-parameter tuning altogether~\cite{chehouri2016violationfactor}.
 
-A different approach prevents infeasibility by construction. PMX, OX, and CX
+A different approach avoids infeasibility by design. PMX, OX, and CX
 are examples: every offspring is automatically a valid tour. The trade-off is
-that restricting operators to feasibility-preserving ones makes it harder to
+that limiting operators to feasibility-preserving ones makes it harder to
 study what happens when infeasible offspring do appear.
 
 \section{Repair Mechanisms in Permutation-based EAs}
 \label{Lit:Repair}
 
-Instead of discarding or penalising infeasible chromosomes, repair modifies
+Instead of discarding or penalising infeasible chromosomes, repair changes
 them into feasible candidates before evaluation. Padhye et al. note an
-important caveat: repair restores feasibility but can also bias the search
-if repaired solutions cluster in particular regions of the feasible
-space~\cite{padhye2015feasibilitypreserving}. Salcedo-Sanz treats repair as
-a broad class of constraint-handling techniques rather than simple
+important limitation: repair restores feasibility but can also bias the
+search if repaired solutions tend to gather in certain regions of the
+feasible space~\cite{padhye2015feasibilitypreserving}. Salcedo-Sanz treats repair as
+a general class of constraint-handling techniques rather than simple
 preprocessing~\cite{salcedosanz2009repair}.
 
 For the TSP, naive crossover can produce duplicated and missing cities. A
@@ -91,11 +91,11 @@ preserves diversity but disturbs edges. Positional insertion retains more
 chromosome structure but reinforces parent bias. Nearest-neighbour insertion
 improves local quality but narrows convergence.
 
-Feasibility and quality are different properties. A repaired chromosome is
-valid but not necessarily a good tour, and the repair may alter the building
-blocks inherited from parents. Uray et al. reinforce this point by showing
-that tour symmetries and edge structure affect whether fit parents produce
-fit offspring~\cite{uray2023csrx}. Repair should therefore be evaluated by
+Feasibility and quality are separate properties. A repaired chromosome is
+valid but not necessarily a good tour, and the repair may change the
+building blocks inherited from parents. Uray et al. support this point by
+showing that tour symmetries and edge structure affect whether fit parents
+produce fit offspring~\cite{uray2023csrx}. Repair should therefore be evaluated by
 its effect on solution quality, diversity, and convergence, not just
 feasibility.
 
@@ -103,11 +103,11 @@ feasibility.
 \label{Lit:CrossoverStudies}
 
 Abdoun and Abouchabaka compare several crossover operators for the TSP,
-including OX, PMX, UPMX, CX, and NWOX, reporting strong performance for OX
+including OX, PMX, UPMX, CX, and NWOX, reporting that OX performed well
 on their benchmark~\cite{abdoun2012adaptivecrossover}. A related study by
-Abdoun, Abouchabaka, and Tajani covers mutation operators and emphasises
+Abdoun, Abouchabaka, and Tajani covers mutation operators and points out
 that representation, selection, crossover, mutation, and operator
-probabilities jointly define a GA
+probabilities together define a GA
 variant~\cite{abdoun2012mutationoperators}.
 
 Thanh et al. test combined crossover mechanisms on TSPLIB instances from 51
@@ -117,7 +117,7 @@ operators around symmetric TSP invariances such as circular shifts and tour
 reversal~\cite{uray2023csrx}. Both studies show that crossover choice
 affects mean and best tour quality on standard benchmarks.
 
-Taken together, the literature points to three things that matter for
-GA-based TSP solvers: permutation-aware operators, careful handling of
-infeasible offspring, and critical evaluation of repair, since restoring
+From these studies, three factors are important for
+GA-based TSP solvers: permutation-aware operators, proper handling of
+infeasible offspring, and careful evaluation of repair, because restoring
 feasibility is not the same as preserving useful structure.

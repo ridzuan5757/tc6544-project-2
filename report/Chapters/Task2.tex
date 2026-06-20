@@ -6,9 +6,9 @@
 \section{Task 2: Algorithm Development}
 \label{Task2}
 
-This chapter specifies the genetic algorithm used throughout the project and
+This chapter describes the genetic algorithm used throughout the project and
 the repair mechanism that handles the permutation constraint. Section
-\ref{T2:GADesign} fixes the representation and the five evolutionary
+\ref{T2:GADesign} defines the representation and the five evolutionary
 operators. Section \ref{T2:Repair} explains why the primary recombination
 operator produces infeasible offspring on every generation and describes the
 repair step that converts those offspring back into valid Hamiltonian tours.
@@ -21,8 +21,8 @@ approaches is reported in Section \ref{T3:RepairCritique}.
 \subsubsection{Solution Representation}
 \label{T2:Representation}
 Each candidate solution is encoded as a permutation of the city index set
-$\{0, 1, \ldots, n-1\}$. A chromosome is an ordered tuple in which the
-$i$-th gene names the $i$-th city visited; the tour is closed by returning
+$\{0, 1, \ldots, n-1\}$. A chromosome is an ordered tuple where the
+$i$-th gene indicates the $i$-th city visited. The tour is closed by returning
 to the first gene. For the eight-city illustration used later, the
 chromosome $[3,0,7,1,5,2,6,4]$ denotes the tour
 $3 \to 0 \to 7 \to 1 \to 5 \to 2 \to 6 \to 4 \to 3$. The fitness of a
@@ -32,10 +32,10 @@ f(\pi) \;=\; \sum_{i=0}^{n-1} d_{\pi_i,\,\pi_{(i+1) \bmod n}},
 \end{equation}
 where $d_{ij}$ is the Euclidean distance between cities $i$ and $j$.
 Because fitness is computed by indexing the distance matrix at the gene
-values, the calculation is only meaningful when the chromosome is a true
+values, the calculation is only meaningful when the chromosome is a valid
 permutation. A chromosome with duplicate or missing cities still produces a
-number, but that number is not the length of a Hamiltonian tour and must
-not be admitted into selection (see Section \ref{T2:Infeasibility}).
+number, but that number is not the length of a Hamiltonian tour and should
+not be allowed into selection (see Section \ref{T2:Infeasibility}).
 
 \subsubsection{Population Initialisation}
 \label{T2:Init}
@@ -43,19 +43,19 @@ The initial population is generated as $N$ independent random permutations
 of the city set, produced with
 \texttt{numpy.random.default\_rng(seed).permutation(n)}. Each chromosome is
 sampled independently, so the initial population is drawn uniformly from
-the space of $n!$ permutations and starts at near-maximal diversity. No
-heuristic seeding (such as a nearest-neighbour tour) is injected, which
-keeps the convergence behaviour reported in Section \ref{T4:Convergence}
-attributable to the evolutionary operators rather than to a warm-started
-population. A single seed controls every stochastic component of the GA,
-making each run reproducible and supporting paired-seed comparisons in
+the space of $n!$ permutations and starts with high diversity. No
+heuristic seeding (such as a nearest-neighbour tour) is used, so
+the convergence behaviour reported in Section \ref{T4:Convergence}
+can be attributed to the evolutionary operators rather than to a
+pre-seeded population. A single seed controls every random component of the GA,
+making each run reproducible and allowing paired-seed comparisons in
 Section \ref{T3:Sensitivity}.
 
 \subsubsection{Selection}
 \label{T2:Selection}
-Two selection mechanisms are implemented and exposed through a single
-configuration parameter, so that the choice of parent-selection rule can be
-swept in the same way as any numerical hyperparameter.
+Two selection methods are implemented and controlled through a single
+configuration parameter, so the choice of parent-selection rule can be
+varied in the same way as any numerical hyperparameter.
 
 Tournament selection is the primary operator. Given a population $P$ of
 size $N$, $k$ candidates are drawn uniformly at random without replacement
@@ -63,24 +63,25 @@ and the candidate with the lowest tour length is returned,
 \begin{equation}
 s \;=\; \arg\min_{i \in C} f(i), \qquad C \subseteq P,\; |C| = k.
 \end{equation}
-The tournament size $k$ controls selection pressure; small $k$ keeps weak
-individuals in play, large $k$ narrows the gene pool quickly. The primary
-configuration uses $k = 3$, which retains enough randomness to delay
-premature convergence while still favouring the better half of the
+The tournament size $k$ controls selection pressure: small $k$ gives weaker
+individuals a better chance, while large $k$ narrows the gene pool quickly.
+The primary configuration uses $k = 3$, which keeps enough randomness to
+delay premature convergence while still favouring the better half of the
 population. The sweep in Section \ref{T3:Sensitivity} varies $k$
 explicitly.
 
-Roulette wheel selection is implemented as a comparison operator. Because
-the TSP is a minimisation problem, raw fitness cannot be used as a
-selection weight directly; instead each individual is assigned the inverse
-fitness and the weights are normalised to a probability distribution,
+Roulette wheel selection is implemented as an alternative operator for
+comparison. Because the TSP is a minimisation problem, raw fitness cannot
+be used as a selection weight directly. Instead, each individual is
+assigned the inverse fitness and the weights are normalised to a
+probability distribution,
 \begin{equation}
 p_i \;=\; \frac{1/f_i}{\sum_{j=1}^{N} 1/f_j}.
 \end{equation}
-The roulette draw then picks a parent with probability $p_i$. The same
-unified \texttt{select} function dispatches on the
-\texttt{selection\_method} field of the GA configuration, so the loop
-body is identical for both methods.
+The roulette draw then picks a parent with probability $p_i$. A single
+\texttt{select} function checks the \texttt{selection\_method} field in the
+GA configuration and calls the appropriate method, so the main loop
+is the same for both selection rules.
 
 \subsubsection{Crossover}
 \label{T2:Crossover}
@@ -90,55 +91,55 @@ $pt \in \{1, \ldots, n-1\}$, the child is constructed by concatenation,
 \begin{equation}
 \mathrm{child} \;=\; A[\,0\,{:}\,pt\,] \,\Vert\, B[\,pt\,{:}\,n\,].
 \end{equation}
-This operator copies positions independently, without examining whether the
+This operator copies positions independently, without checking whether the
 inserted gene values have already appeared elsewhere in the child. It does
 not preserve the permutation property: the same city may appear twice and
-another may disappear. The choice is deliberate. Pairing naive crossover
-with the repair step makes the repair mechanism load-bearing on every
-generation rather than a decorative safety net invoked once in a thousand
-matings, which matches the assignment's focus on repair as the central
-constraint-handling contribution.
+another may disappear. This choice is intentional. Pairing naive crossover
+with the repair step means the repair mechanism must do real work on every
+generation, not just handle rare edge cases. This setup matches the
+assignment's focus on repair as the main constraint-handling contribution.
 
 Three feasibility-preserving operators are also implemented as
 alternatives for the comparison in Section \ref{T3:RepairCritique}.
-Partially Mapped Crossover (PMX) of \cite{goldberg1985alleles} copies a
-segment $A[p_1{:}p_2]$ into the child and routes each displaced value from
-$B$ through the segment mapping until it reaches an unoccupied position;
-remaining slots are filled directly from $B$. Order Crossover (OX), due to
-\cite{davis1985applying} and refined in \cite{oliver1987study}, also copies
-the segment from $A$ and then walks $B$ in wrap-around order from just
-after $p_2$, skipping any value already present in the segment. Cycle
-Crossover (CX) discovers position-wise cycles between the two parents and
-inherits whole cycles alternately from each parent, so every position is
-filled once and every city appears once. The constructive arguments behind
-PMX, OX, and CX, together with comparative reviews of permutation
-operators, are summarised in \cite{larranaga1999genetic} and
-\cite{cicirello2023permutationoperators}; the worked example in Section
-\ref{T2:Infeasibility} shows the three operators producing valid
-permutations on the same parents that defeat naive crossover.
+Partially Mapped Crossover (PMX) \cite{goldberg1985alleles} copies a
+segment $A[p_1{:}p_2]$ into the child and follows the segment mapping for
+each displaced value from $B$ until it finds an empty position; remaining
+slots are filled directly from $B$. Order Crossover (OX),
+from \cite{davis1985applying} and refined in \cite{oliver1987study}, also
+copies the segment from $A$ and then walks $B$ in wrap-around order
+starting after $p_2$, skipping any value already in the segment. Cycle
+Crossover (CX) finds position-wise cycles between the two parents and
+takes whole cycles from each parent in turn, so every position is
+filled once and every city appears once. The reasoning behind PMX, OX,
+and CX, along with comparative reviews of permutation operators, is
+covered in \cite{larranaga1999genetic} and
+\cite{cicirello2023permutationoperators}. The worked example in Section
+\ref{T2:Infeasibility} shows all three operators producing valid
+permutations on the same parents that break naive crossover.
 
 \subsubsection{Mutation}
 \label{T2:Mutation}
 Swap mutation is the sole mutation operator used in the primary pipeline.
-On each invocation a uniform variate is drawn from $[0,1)$; if it falls
+On each call, a random number is drawn from $[0,1)$. If it falls
 below the mutation rate $r_m$, two distinct gene positions $i$ and $j$ are
-sampled without replacement and the gene values at those positions are
-exchanged. The chromosome length, the set of cities, and the permutation
-property are all preserved by construction, so swap mutation introduces no
-infeasibility of its own. Its perturbation is local: exactly two edges in
-the tour change, which makes it well suited to late-stage refinement.
-Inversion mutation, in which the segment between two cut points is
-reversed in place, is implemented in the code base as a comparison
-operator but is not used by any of the primary experiments in this report.
+picked without replacement and the gene values at those positions are
+swapped. The chromosome length, the set of cities, and the permutation
+property are all preserved by design, so swap mutation does not introduce
+any infeasibility. The change is local: exactly two edges in
+the tour change, which makes it suitable for late-stage refinement.
+Inversion mutation, where the segment between two cut points is
+reversed in place, is implemented in the code base as an alternative
+operator but is not used in any of the primary experiments in this report.
 
 \subsubsection{Main Loop}
 The five operators are combined into a generational GA with elitism.
 At each generation the top $e$ individuals are copied unchanged into the
-next population; the remainder is generated by repeated selection,
+next population. The remaining slots are filled by repeated selection,
 crossover (with probability $r_c$), mutation, and (if enabled) repair.
 The elitism count is fixed at $e = 2$ throughout the primary experiments,
-which protects the incumbent best while leaving most of the population
-open to recombination. Algorithm \ref{alg:ga} states the loop precisely.
+which keeps the current best solution safe while leaving most of the
+population open to recombination. Algorithm \ref{alg:ga} shows the loop
+in detail.
 
 \begin{algorithm}[h]
 \caption{Generational GA with Optional Repair}
@@ -171,13 +172,13 @@ open to recombination. Algorithm \ref{alg:ga} states the loop precisely.
 \label{T2:Repair}
 
 The TSP imposes a single hard constraint on the chromosome: every city
-must appear exactly once. The constraint cannot be relaxed without
+must appear exactly once. This constraint cannot be relaxed without
 changing the problem, so the GA either uses recombination operators that
-preserve it by construction or repairs violations after they occur.
-Surveys of evolutionary constraint handling describe the same trichotomy
-of options --- preservation, repair, and penalty
+preserve it by design or repairs violations after they occur.
+Surveys of evolutionary constraint handling describe the same three
+options --- preservation, repair, and penalty
 \cite{coello2002constraint,michalewicz1996evolutionary}. The primary
-pipeline of this project takes the repair route, paired with naive
+pipeline of this project uses the repair approach, paired with naive
 single-point crossover so that the repair step does real work on every
 offspring.
 
@@ -186,9 +187,9 @@ offspring.
 Naive single-point crossover treats the chromosome like an ordinary
 fixed-position string. It copies gene positions independently and does
 not check whether the inserted value already appears elsewhere in the
-child. For a permutation representation the constraint is global rather
-than positional, so this position-by-position copy is exactly the
-operation that breaks the city set.
+child. In a permutation representation the constraint applies to the
+whole chromosome, not to individual positions, so this position-by-position
+copy is what breaks the city set.
 
 Consider the following worked example. The parents are
 \begin{align*}
@@ -207,27 +208,25 @@ single-point crossover is
 City $1$ now appears at positions $1$ and $6$, and city $3$ appears at
 positions $3$ and $7$. Cities $4$ and $6$ never appear. The chromosome
 has the correct length but is not a Hamiltonian tour. The same
-mechanism causes violations on kroA100, where every one
-of thirty naive-crossover offspring was infeasible, with twenty-four
-duplicates on average.
+problem occurs on kroA100, where all thirty naive-crossover offspring
+tested were infeasible, with twenty-four duplicates on average.
 
-The downstream effect on selection is the problem. Fitness evaluation
-on $(0,1,2,3,5,7,1,3)$ still returns a number, but the number sums
+The real problem is the effect on selection. Fitness evaluation
+on $(0,1,2,3,5,7,1,3)$ still returns a number, but that number sums
 distances over an edge set that visits city $1$ twice, visits city $3$
 twice, and skips cities $4$ and $6$ entirely. The result tends to be
-artificially small: cheap edges contribute repeatedly while expensive
-missing-city edges are dropped. Selection compares this number against
-the genuine tour lengths of feasible competitors as if they were
-commensurable. Tournament and roulette selection then favour the
+artificially small because cheap edges are counted repeatedly while
+expensive missing-city edges are left out. Selection compares this
+number against the actual tour lengths of feasible competitors as if
+they were comparable. Tournament and roulette selection then favour the
 infeasible chromosome, its invalid genetic material spreads through
-recombination, and within a handful of generations the population
-converges towards short pseudo-tours rather than short tours. The
-infeasibility analysis in
-\cite{cicirello2023permutationoperators} traces the same failure mode
+recombination, and within a few generations the population moves towards
+short pseudo-tours rather than short tours. The infeasibility analysis in
+\cite{cicirello2023permutationoperators} traces the same failure pattern
 across the permutation operator family.
 
-The contrast with the permutation-preserving operators makes the
-mechanism clear. On the same parents and the same cut points: 
+Comparing with the permutation-preserving operators makes this
+clear. On the same parents and the same cut points:
 
 \begin{itemize}
 	\item PMX returns $(5,6,2,3,4,7,1,0)$.
@@ -237,25 +236,24 @@ mechanism clear. On the same parents and the same cut points:
 
 
 All three are valid permutations because
-each operator embeds a feasibility-preserving rule into the copy step
-itself. The repair mechanism described below recovers the same
-guarantee by acting after a naive copy rather than during one.
+each operator has a feasibility-preserving rule built into the copy step
+itself. The repair mechanism described below achieves the same
+result by acting after a naive copy rather than during one.
 
 \subsubsection{Repair Design}
 \label{T2:RepairDesign}
-The repair function follows a two-phase structure: diagnose the
-infeasible chromosome, then correct it. The diagnosis phase is a single
-left-to-right scan. A \emph{seen} set records the first occurrence of
-each city in scan order; any subsequent occurrence of the same city is
-flagged as a duplicate position. After the scan, the missing set is
-computed as $\{0, 1, \ldots, n-1\} \setminus \mathrm{seen}$. Because
-the chromosome length is fixed at $n$, the number of duplicate positions
-equals the number of missing cities, so every duplicate can be replaced
-with a unique missing city.
+The repair function has two phases: diagnose the infeasible chromosome,
+then correct it. The diagnosis phase does a single left-to-right scan.
+A \emph{seen} set records the first occurrence of each city in scan
+order. Any later occurrence of the same city is marked as a duplicate
+position. After the scan, the missing set is computed as
+$\{0, 1, \ldots, n-1\} \setminus \mathrm{seen}$. Because the chromosome
+length is fixed at $n$, the number of duplicate positions equals the
+number of missing cities, so every duplicate can be replaced with a
+unique missing city.
 
 The correction phase assigns the missing cities to the duplicate
-positions. The order in which the assignment is made distinguishes
-three strategies:
+positions. The order of assignment differs across three strategies:
 \begin{enumerate}[nosep]
     \item \textbf{Random insertion} (the primary strategy) shuffles the
           missing cities with the GA's seeded random generator and
@@ -269,74 +267,40 @@ three strategies:
           still-unassigned missing city whose Euclidean distance to the
           immediately preceding gene in the chromosome is smallest.
 \end{enumerate}
-Random insertion is the primary choice. It introduces no bias from the
-problem geometry, so the repair step contributes feasibility without
-contributing optimisation; the GA's selection pressure remains the sole
-driver of solution quality. Random insertion also tends to preserve
-population diversity better than the deterministic alternatives,
+Random insertion is the primary choice. It does not add any bias from the
+problem geometry, so the repair step only provides feasibility without
+guiding optimisation. The GA's selection pressure remains the only
+driver of solution quality. Random insertion also tends to keep
+population diversity higher than the deterministic alternatives,
 because two infeasible chromosomes with the same duplicates and missing
 cities can still be repaired into different tours. The
-feasibility-preserving repair literature reports the same tension
+feasibility-preserving repair literature reports the same trade-off
 between feasibility and diversity
 \cite{padhye2015feasibilitypreserving}. Algorithm \ref{alg:ga} places
 the repair call after mutation, so any chromosome reaching the fitness
 evaluation step at the end of the loop is guaranteed to be a valid
 permutation.
 
-The repair function is illustrated step by step below. On the eight-city chromosome
-$(3,1,4,1,5,2,6,3)$, the diagnosis phase identifies duplicate positions
-$\{3, 7\}$ and missing cities $\{0, 7\}$. Random insertion may return
-$(3,1,4,7,5,2,6,0)$; position insertion deterministically returns
+The repair function is shown step by step below. On the eight-city
+chromosome $(3,1,4,1,5,2,6,3)$, the diagnosis phase finds duplicate
+positions $\{3, 7\}$ and missing cities $\{0, 7\}$. Random insertion may
+return $(3,1,4,7,5,2,6,0)$; position insertion always returns
 $(3,1,4,0,5,2,6,7)$; nearest-neighbour insertion on the toy octagon
 returns $(3,1,4,7,5,2,6,0)$. All three are valid permutations. A
-property test runs the repair on five hundred random
-corruptions across all three strategies and observes a valid
-permutation in every case.
+property test runs the repair on five hundred random corruptions across
+all three strategies and produces a valid permutation in every case.
 
 \subsubsection{Effect on Quality, Diversity, and Convergence}
 \label{T2:RepairEffect}
-The repair step has three intended effects on the GA's behaviour. The
-quantitative measurement of those effects is reported in Sections
-\ref{T3:RepairCritique} and \ref{T4:Convergence}; this section sets
-expectations.
-
-The first effect is on fitness validity. Every chromosome that reaches
-the fitness evaluation step in Algorithm \ref{alg:ga} is a true
-permutation, so the tour-length number returned by the distance matrix
-indexing is the actual length of a Hamiltonian tour over $n$ cities.
-Without repair, the same fitness function returns a number whose
-relationship to a tour length is corrupted by the same duplicate and
-missing-city counting that produced it; the apparent tour lengths are
-smaller because they sum over fewer edges, not because the underlying
-tours are better. Section \ref{T3:RepairCritique} confirms this
-empirically: the no-repair arm posts a lower mean fitness than the
-repair arm at generation five hundred, but the no-repair fitness does
-not correspond to a valid 100-city tour and is not comparable.
-
-The second effect is on diversity. Random insertion injects stochastic
-variation at the duplicate positions, so a population that would
-otherwise lose diversity through repeated crossovers between similar
-chromosomes retains some Hamming distance. The measured diversity
-trajectory in Section \ref{T3:RepairCritique} shows the repair arm
-holding slightly higher Hamming distance than the no-repair baseline at
-the same generation, despite both arms losing most of the initial
-diversity by generation five hundred. Deterministic repair strategies
-do not provide this benefit, which is part of the reason random
-insertion is the primary choice rather than position insertion.
-
-The third effect is on convergence. The repair step keeps the search
-inside the feasible region, so the apparent improvement in best fitness
-across generations reflects actual tour-length reduction rather than an
-increasing severity of constraint violation. In the comparison reported
-in Section \ref{T3:RepairCritique}, the repair pipeline converges to
-solutions comparable with the feasibility-preserving PMX alternative
-and narrowly outperforms it on the kroA100 paired-seed runs. The
-penalty function comparator, in contrast, exhibits the failure mode
-discussed in
-\cite{coello2002constraint,michalewicz1996evolutionary}: the penalty
-weight is hard to tune, and the GA converges either to overpenalised
-feasible-but-poor regions or to underpenalised infeasible regions.
-Section \ref{T3:RepairCritique} reports the magnitudes; this section
-records that repair was retained as the primary mechanism on the basis
-of feasibility validity, diversity preservation, and stable
-convergence.
+The repair step has three intended effects on the GA's behaviour.
+First, it ensures fitness validity: every chromosome that reaches the
+evaluation step in Algorithm \ref{alg:ga} is a valid permutation, so
+the tour length returned by the distance matrix is the actual length of
+a Hamiltonian tour. Without repair, the fitness function still returns a
+number, but it is distorted by duplicate and missing-city edges and
+cannot be compared against valid tours. Second, random insertion adds
+variation at the duplicate positions, which helps maintain population
+diversity. Third, because repair keeps the search inside the feasible
+region, the convergence curve reflects actual tour-length improvement
+rather than worsening constraint violations. Section
+\ref{T3:RepairCritique} confirms these effects quantitatively.

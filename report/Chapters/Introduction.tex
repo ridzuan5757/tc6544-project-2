@@ -11,81 +11,82 @@ visits every city in a given set exactly once before returning to the
 starting city. The statement is simple, but the TSP is
 NP-hard~\cite{applegate2006traveling} and its search space grows
 factorially with the number of cities. Exhaustive enumeration is therefore
-impractical for all but the smallest instances. The TSP has long served as
-a standard testbed for combinatorial metaheuristics, and Genetic Algorithms
-(GAs) are among the most frequently studied
+not practical for all but the smallest instances. The TSP has been widely
+used as a standard testbed for combinatorial metaheuristics, and Genetic
+Algorithms (GAs) are among the most commonly studied
 approaches~\cite{holland1975adaptation,goldberg1989genetic}. In this
-report we implement a GA for the static single-objective TSP, paying
-close attention to how constraint violations are detected and corrected
-during the search.
+report we implement a GA for the static single-objective TSP, with
+particular attention to how constraint violations are detected and
+corrected during the search.
 
 \section{Background}
 \label{Intro:Background}
 
 A tour in the TSP is a permutation of the city indices, and a permutation
 is feasible only when every city appears exactly once. This makes operator
-design unusually important: ordinary crossover operators borrowed from
+design especially important: ordinary crossover operators taken from
 binary or real-valued GAs do not preserve the permutation property and
-routinely produce offspring containing duplicated cities while omitting
-others. Specialised operators have been developed for exactly this reason,
+often produce offspring that contain duplicated cities while omitting
+others. Specialised operators have been developed for this reason,
 including Partially Mapped Crossover (PMX)~\cite{goldberg1985alleles},
 Order Crossover (OX)~\cite{davis1985applying}, and Cycle Crossover
 (CX)~\cite{oliver1987study}. When such operators are not used, the GA
-must handle infeasibility some other way, either by penalising it in
+must handle infeasibility in some other way, either by penalising it in
 the fitness function or by repairing offspring before evaluation.
 
-We use kroA100 from TSPLIB~\cite{reinelt1991tsplib} as our benchmark:
-100 cities in the Euclidean plane with a known optimal tour length of
-21\,282. It is large enough to expose meaningful differences between
-constraint-handling strategies yet small enough that thirty-seed
-comparisons and parameter sweeps stay computationally tractable.
+We use kroA100 from TSPLIB~\cite{reinelt1991tsplib} as our benchmark.
+It contains 100 cities in the Euclidean plane with a known optimal tour
+length of 21\,282. It is large enough to show meaningful differences
+between constraint-handling strategies, yet small enough that
+thirty-seed comparisons and parameter sweeps remain computationally
+feasible.
 
 \section{Problem Statement}
 \label{Intro:ProblemStatement}
 
 When a GA for the TSP uses a crossover operator that does not preserve
-permutations (single-point crossover being the simplest case)
+permutations (single-point crossover being the simplest case),
 offspring will typically contain duplicated cities at some positions and
 omit other cities entirely. Computing tour length on such a chromosome
 gives a distance that does not correspond to any valid tour. Worse, the
-value is often artificially low because the missing cities never add to
-the sum. Selection then favours these infeasible chromosomes, pulling the
-population away from the feasible region.
+value is often artificially low because the missing cities never
+contribute to the sum. Selection then favours these infeasible
+chromosomes, which pushes the population away from the feasible region.
 
-Three strategies address this. First, feasibility can be preserved by
-construction using permutation-aware operators such as PMX. Second,
-infeasibility can be tolerated but discouraged through a penalty term
-proportional to the violation count. Third, infeasibility can be removed
-after recombination by a repair step that detects duplicates and missing
-cities and rewrites the chromosome into a valid permutation. We want to
-know how these three strategies compare on a fixed benchmark when the
-rest of the GA pipeline is held constant.
+There are three strategies to address this. First, feasibility can be
+preserved by construction using permutation-aware operators such as PMX.
+Second, infeasibility can be tolerated but discouraged through a penalty
+term proportional to the violation count. Third, infeasibility can be
+removed after recombination by a repair step that detects duplicates and
+missing cities and rewrites the chromosome into a valid permutation. We
+want to know how these three strategies compare on a fixed benchmark
+when the rest of the GA pipeline is held constant.
 
 \section{Contributions}
 \label{Intro:Contributions}
 
 We implement a full GA pipeline for the TSP using permutation encoding,
 tournament selection ($k=3$), swap mutation, and elitism. The primary
-configuration pairs naive single-point crossover with a random-insertion
-repair operator that is active on every generation, so every offspring is
-guaranteed feasible before evaluation. We then run a three-arm comparison
-on kroA100 over 30 seeds, contrasting repair against a penalty function
-and against PMX. Repair and PMX produce similar mean tour lengths while
-penalty trails both by a clear margin. A 1\,620-run parameter sweep
-supplements the comparison, and we report convergence curves, diversity
-traces, and tour plots alongside a critical discussion of where the GA
-works well and where it falls short.
+configuration uses naive single-point crossover together with a
+random-insertion repair operator that runs on every generation, so every
+offspring is guaranteed feasible before evaluation. We then run a
+three-arm comparison on kroA100 over 30 seeds, comparing repair against
+a penalty function and against PMX. Repair and PMX produce similar mean
+tour lengths, while penalty performs worse by a clear margin. A
+1\,620-run parameter sweep adds to the comparison. We report convergence
+curves, diversity traces, and tour plots together with a discussion of
+where the GA works well and where it falls short.
 
 \section{Report Outline}
 \label{Intro:Outline}
 
 \cref{SecLiteratureReview} reviews related work on GAs for the TSP and
 constraint handling in evolutionary computation.
-\cref{Task1} formalises the problem and describes the experimental setup,
+\cref{Task1} defines the problem and describes the experimental setup,
 including the benchmark, parameter ranges, and seed protocol.
 \cref{Task2} presents the GA implementation and repair mechanism.
 \cref{Task3} reports the parameter sweep, the three-arm comparison, and
-a critical analysis of strengths and limitations.
+an analysis of strengths and limitations.
 \cref{Task4} covers convergence, diversity, and tour-geometry
 visualisations. Finally, \cref{SecConclusion} concludes and suggests
 directions for future work.

@@ -14,29 +14,30 @@
 
 The Traveling Salesman Problem (TSP) asks for the shortest closed tour
 that visits every city exactly once. Its search space grows factorially
-with the number of cities, so exact solvers are impractical beyond small
-instances and metaheuristics such as Genetic Algorithms (GAs) are widely
-used instead. A well-known difficulty when applying GAs to the TSP is
-that standard crossover operators break the permutation property:
-offspring end up with duplicated cities and missing ones, which makes
-their fitness values meaningless and misleads selection.
+with the number of cities, so exact solvers are not practical beyond
+small instances and metaheuristics such as Genetic Algorithms (GAs) are
+widely used instead. A well-known difficulty when applying GAs to the
+TSP is that standard crossover operators break the permutation property:
+offspring contain duplicated cities and missing ones, so their fitness
+values become meaningless and mislead selection.
 
 We design and implement a GA for the static single-objective TSP and
 focus on how to handle these constraint violations. Our primary pipeline
-uses naive single-point crossover paired with a random-insertion repair
-step that runs on every offspring, fixing duplicates and restoring
-missing cities before evaluation. We compare this repair approach
-against two alternatives from the assignment specification: a penalty
-function that adds cost proportional to the number of violations, and
-Partially Mapped Crossover (PMX), which produces valid permutations by
-construction. All experiments use the kroA100 benchmark (100 cities,
-known optimum 21\,282). We run 30 independent seeds per strategy plus a
-1\,620-run parameter sweep over population size, crossover rate,
-mutation rate, and selection method. Repair achieves the lowest mean
-tour length ($49\,778$), PMX is close behind ($50\,655$), and penalty
-trails noticeably ($57\,948$). All three arms produce valid tours, so
-the gaps reflect genuine solution quality. The results indicate that
-repair can match or modestly beat a feasibility-preserving operator on
-this benchmark while clearly outperforming a penalty-based alternative.
+uses naive single-point crossover together with a random-insertion
+repair step that runs on every offspring. This step fixes duplicates and
+restores missing cities before evaluation. We compare this repair
+approach against two alternatives from the assignment specification: a
+penalty function that adds cost proportional to the number of
+violations, and Partially Mapped Crossover (PMX), which produces valid
+permutations by construction. All experiments use the kroA100 benchmark
+(100 cities, known optimum 21\,282). We run 30 independent seeds per
+strategy plus a 1\,620-run parameter sweep over population size,
+crossover rate, mutation rate, and selection method. Repair achieves the
+lowest mean tour length ($49\,778$), PMX is close behind ($50\,655$),
+and penalty performs clearly worse ($57\,948$). All three strategies
+produce valid tours, so the differences reflect actual solution quality.
+The results show that repair can match or slightly beat a
+feasibility-preserving operator on this benchmark while clearly
+outperforming a penalty-based alternative.
 
 \clearpage

@@ -162,14 +162,14 @@ returns a number, and it tends to be artificially low.
     \includegraphics[width=0.82\textwidth]{pmx_crossover.pdf}
 \end{center}
 
-PMX copies the segment from Parent A, then routes displaced values through
-a mapping chain until each lands in an unoccupied position.
+PMX copies a segment from Parent A, then uses a mapping to place the
+remaining values from Parent B without creating duplicates.
 Every city appears exactly once -- no repair needed.
 \end{frame}
 
 \begin{frame}{Our Approach: Repair After the Fact}
 Instead of switching to PMX, we keep naive crossover and \textbf{repair}
-every offspring. This makes repair load-bearing on every generation.
+every offspring. This way, repair has to do real work on every generation.
 
 \medskip
 
@@ -179,8 +179,8 @@ flag duplicate positions, compute missing cities.
 \medskip
 
 \textbf{Phase 2 -- Correction} (random insertion):
-shuffle missing cities, place at duplicate positions. No geometric bias,
-preserves population diversity.
+shuffle missing cities, place at duplicate positions. Does not favour
+any particular city arrangement, so population diversity is preserved.
 
 \medskip
 
@@ -244,19 +244,19 @@ Penalty & 57,948 & 3,285 & 172.3\% \\
 \end{tabular}
 
 \smallskip
-Repair and PMX are practically tied; penalty trails by ${\sim}16\%$.
+Repair and PMX are almost the same; penalty is ${\sim}16\%$ worse.
 \end{frame}
 
 \begin{frame}{Takeaways}
 \begin{enumerate}
-    \item Naive crossover + repair is competitive with PMX on kroA100
-          (mean gap differs by ${\sim}2\%$)
-    \item Random insertion preserves diversity better than deterministic
+    \item Naive crossover + repair performs almost as well as PMX on
+          kroA100 (only ${\sim}2\%$ difference)
+    \item Random insertion keeps more diversity than deterministic
           repair strategies
-    \item Penalty function trails both feasibility-based approaches
-          by ${\sim}16\%$
-    \item Enforcing feasibility directly gives the GA a cleaner search
-          signal than penalising infeasibility
+    \item Penalty function is ${\sim}16\%$ worse than both
+          feasibility-based approaches
+    \item Fixing or preventing infeasibility works much better than
+          just penalising it
 \end{enumerate}
 
 \bigskip
